@@ -19,6 +19,35 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 app.include_router(api_router, prefix="/api")
 
+@app.get("/setup/seed")
+async def seed_db():
+    """Manual trigger to seed database for Vercel"""
+    try:
+        # Create Tables
+        Base.metadata.create_all(bind=engine)
+        
+        # Init Admin
+        db = SessionLocal()
+        try:
+            if not db.query(User).first():
+                admin_user = User(
+                    username="admin",
+                    password_hash=get_password_hash("admin"),
+                    full_name="System Administrator",
+                    role=UserRole.ADMIN,
+                    phone_number="000-000-0000",
+                    is_active=True
+                )
+                db.add(admin_user)
+                db.commit()
+                return {"message": "Admin user created successfully. Use: admin / admin", "status": "seeded"}
+            else:
+                return {"message": "Database already initialized (users exist).", "status": "skipped"}
+        finally:
+            db.close()
+    except Exception as e:
+        return {"error": str(e), "status": "failed"}
+
 @app.on_event("startup")
 def startup_event():
     # Create tables
