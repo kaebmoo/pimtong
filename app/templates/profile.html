@@ -84,18 +84,20 @@
         if (pwd) data.password = pwd;
 
         // Need endpoint to update ME. 
-        // Assuming PATCH /api/users/me
+        // Using PUT /api/users/me (Standard for this app)
         const response = await fetch('/api/users/me', {
-            method: 'PATCH',
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
 
         if (response.ok) {
             alert("Profile updated!");
+            // Reload to refresh potential name changes in UI header
             location.reload();
         } else {
-            alert("Error updating profile");
+            const err = await response.json();
+            alert("Error updating profile: " + (err.detail || "Unknown error"));
         }
     });
 </script>

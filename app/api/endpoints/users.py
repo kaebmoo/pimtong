@@ -60,6 +60,33 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(db_user)
     return db_user
 
+@router.get("/me", response_model=UserOut)
+def read_user_me(
+    current_user: User = Depends(get_current_user)
+):
+    return current_user
+
+@router.put("/me", response_model=UserOut)
+def update_user_me(
+    user_update: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    update_data = user_update.dict(exclude_unset=True)
+    
+    if 'password' in update_data:
+        password = update_data.pop('password')
+        current_user.password_hash = get_password_hash(password)
+        
+    for key, value in update_data.items():
+        setattr(current_user, key, value)
+        
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
 @router.get("/", response_model=List[UserOut])
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = db.query(User).offset(skip).limit(limit).all()
