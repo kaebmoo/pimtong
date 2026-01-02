@@ -3,16 +3,48 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.core.config import settings
 from app.api.api import api_router
-from app.core.database import engine, Base
-
-# Create tables (simple way for dev, better to use alembic in prod)
-Base.metadata.create_all(bind=engine) 
+from app.core.database import engine, Base, SessionLocal
+from app.core.security import get_password_hash
+from app.models.models import User, UserRole
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 app.include_router(api_router, prefix="/api")
+
+@app.on_event("startup")
+def startup_event():
+    # Create tables
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print(f"Error creating tables: {e}")
+    
+    # Init Admin
+    try:
+        db = SessionLocal()
+        try:
+            # Check if user table exists and has users
+            # Note: query(User) might fail if table doesn't exist yet if create_all failed (e.g. conn error)
+            # But we catch that outside.
+            if not db.query(User).first():
+                print("--- NO USERS FOUND: Seeding Default Admin ---")
+                admin_user = User(
+                    username="admin",
+                    password_hash=get_password_hash("admin"),
+                    full_name="System Administrator",
+                    role=UserRole.ADMIN,
+                    phone_number="000-000-0000",
+                    is_active=True
+                )
+                db.add(admin_user)
+                db.commit()
+                print("--- DEFAULT ADMIN CREATED: admin / admin ---")
+        finally:
+            db.close()
+    except Exception as e:
+        print(f"Startup seeding failed: {e}")
 
 # Web routes will be added separately or here
 from fastapi import Request, Depends
