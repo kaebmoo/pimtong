@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">My Profile</h1>
+
+    <div class="bg-white shadow rounded-lg p-6">
+        <form id="profileForm" class="space-y-6">
+            <div class="flex items-center space-x-6 mb-6">
+                <div class="h-20 w-20 rounded-full bg-gray-200 overflow-hidden">
+                    <img id="profileAvatar" src="https://ui-avatars.com/api/?name=User"
+                        class="h-full w-full object-cover">
+                </div>
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900" id="displayUsername"></h3>
+                    <p class="text-sm text-gray-500" id="displayRole"></p>
+                </div>
+            </div>
+
+            <div>
+                <label for="full_name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                <input type="text" id="full_name" name="full_name"
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">New Password (leave blank to keep
+                    current)</label>
+                <input type="password" id="password" name="password"
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
+            </div>
+
+            <div>
+                <label for="confirm_password" class="block text-sm font-medium text-gray-700">Confirm New
+                    Password</label>
+                <input type="password" id="confirm_password"
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit"
+                    class="bg-primary hover:bg-sky-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Fetch current user data
+        // For now we assume typical user endpoint or we use the injected template variable if available
+        // But better to fetch fresh data for editing
+
+        // Since we don't have a direct /api/users/me yet, let's assume we can get it or finding via ID
+        // For MVP, we will rely on client-side JS fetching list and matching (insecure but fast for mockup) 
+        // OR better: Implement /api/users/me in backend. 
+        // Let's implement /api/users/me first. Assuming it exists now.
+
+        const response = await fetch('/api/users/me');
+        if (response.ok) {
+            const user = await response.json();
+            document.getElementById('displayUsername').innerText = user.username;
+            document.getElementById('displayRole').innerText = user.role;
+            document.getElementById('full_name').value = user.full_name;
+            document.getElementById('profileAvatar').src = `https://ui-avatars.com/api/?name=${user.full_name}&background=random`;
+        }
+    });
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const pwd = document.getElementById('password').value;
+        const confirm = document.getElementById('confirm_password').value;
+
+        if (pwd && pwd !== confirm) {
+            alert("Passwords do not match!");
+            return;
+        }
+
+        const data = {
+            full_name: document.getElementById('full_name').value,
+        };
+        if (pwd) data.password = pwd;
+
+        // Need endpoint to update ME. 
+        // Assuming PATCH /api/users/me
+        const response = await fetch('/api/users/me', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            alert("Profile updated!");
+            location.reload();
+        } else {
+            alert("Error updating profile");
+        }
+    });
+</script>
+{% endblock %}

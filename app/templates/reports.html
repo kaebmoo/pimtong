@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block header %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Reports</h1>
+    <button onclick="exportCSV()"
+        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
+        <i class="fas fa-file-export mr-2"></i> Export CSV
+    </button>
+</div>
+
+<!-- Stats Overview -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white overflow-hidden shadow rounded-lg px-4 py-5 sm:p-6">
+        <dt class="text-sm font-medium text-gray-500 truncate">Total Jobs</dt>
+        <dd class="mt-1 text-3xl font-semibold text-gray-900" id="stat-total">-</dd>
+    </div>
+    <div class="bg-white overflow-hidden shadow rounded-lg px-4 py-5 sm:p-6">
+        <dt class="text-sm font-medium text-gray-500 truncate">Completed</dt>
+        <dd class="mt-1 text-3xl font-semibold text-green-600" id="stat-completed">-</dd>
+    </div>
+    <div class="bg-white overflow-hidden shadow rounded-lg px-4 py-5 sm:p-6">
+        <dt class="text-sm font-medium text-gray-500 truncate">In Progress</dt>
+        <dd class="mt-1 text-3xl font-semibold text-yellow-600" id="stat-progress">-</dd>
+    </div>
+    <div class="bg-white overflow-hidden shadow rounded-lg px-4 py-5 sm:p-6">
+        <dt class="text-sm font-medium text-gray-500 truncate">Completion Rate</dt>
+        <dd class="mt-1 text-3xl font-semibold text-indigo-600" id="stat-rate">-%</dd>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white shadow rounded-lg p-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Jobs by Technician</h3>
+        <canvas id="techChart"></canvas>
+    </div>
+    <!-- Placeholder for another chart -->
+    <div class="bg-white shadow rounded-lg p-6 flex items-center justify-center text-gray-400">
+        <p>More charts coming soon...</p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadStats();
+        loadCharts();
+    });
+
+    async function loadStats() {
+        const response = await fetch('/api/reports/summary');
+        const data = await response.json();
+        document.getElementById('stat-total').innerText = data.total_jobs;
+        document.getElementById('stat-completed').innerText = data.completed;
+        document.getElementById('stat-progress').innerText = data.in_progress;
+        document.getElementById('stat-rate').innerText = data.completion_rate + '%';
+    }
+
+    async function loadCharts() {
+        const response = await fetch('/api/reports/by_technician');
+        const data = await response.json();
+
+        const ctx = document.getElementById('techChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.name),
+                datasets: [{
+                    label: 'Jobs Assigned',
+                    data: data.map(d => d.count),
+                    backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                    borderColor: 'rgba(79, 70, 229, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    async function exportCSV() {
+        const response = await fetch('/api/reports/export');
+        const data = await response.json();
+
+        if (data.length === 0) {
+            alert("No data to export");
+            return;
+        }
+
+        const headers = Object.keys(data[0]);
+        const csvContent = [
+            headers.join(','),
+            ...data.map(row => headers.map(fieldName => JSON.stringify(row[fieldName], (key, value) => value === null ? '' : value)).join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "jobs_report.csv");
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+{% endblock %}

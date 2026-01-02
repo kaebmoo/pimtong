@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-gray-800 mb-6">Today's Overview</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- New Jobs -->
+    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4">
+                <i class="fas fa-clipboard-list fa-2x"></i>
+            </div>
+            <div>
+                <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">Pending Jobs</p>
+                <p class="text-3xl font-bold text-gray-700" id="stat-pending">-</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- In Progress -->
+    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-yellow-100 text-yellow-500 mr-4">
+                <i class="fas fa-tools fa-2x"></i>
+            </div>
+            <div>
+                <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">In Progress</p>
+                <p class="text-3xl font-bold text-gray-700" id="stat-progress">-</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completed -->
+    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4">
+                <i class="fas fa-check-circle fa-2x"></i>
+            </div>
+            <div>
+                <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">Completed Today</p>
+                <p class="text-3xl font-bold text-gray-700" id="stat-completed">-</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Job List -->
+<div class="bg-white shadow rounded-lg mb-8">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-bold text-gray-900">Recent &amp; Urgent Jobs</h3>
+    </div>
+    <div class="p-0 overflow-x-auto">
+        <table class="w-full text-left table-auto">
+            <thead>
+                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                    <th class="px-6 py-3 font-medium">Status</th>
+                    <th class="px-6 py-3 font-medium">Job Title</th>
+                    <th class="px-6 py-3 font-medium">Customer</th>
+                    <th class="px-6 py-3 font-medium">Technician</th>
+                    <th class="px-6 py-3 font-medium">Date</th>
+                </tr>
+            </thead>
+            <tbody id="todayJobsBody" class="divide-y divide-gray-200 text-sm text-gray-700">
+                <!-- Populated by JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadDashboardStats();
+        loadRecentJobs();
+    });
+
+    async function loadDashboardStats() {
+        const response = await fetch('/api/jobs/?limit=1000'); // Fetch all for stats
+        const jobs = await response.json();
+
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        const pending = jobs.filter(j => j.status === 'pending').length;
+        const inProgress = jobs.filter(j => j.status === 'in_progress').length;
+        const completedToday = jobs.filter(j => j.status === 'completed' && j.scheduled_date === todayStr).length;
+
+        document.getElementById('stat-pending').innerText = pending;
+        document.getElementById('stat-progress').innerText = inProgress;
+        document.getElementById('stat-completed').innerText = completedToday;
+    }
+
+    async function loadRecentJobs() {
+        // Fetch recent jobs, limited to 10
+        const response = await fetch('/api/jobs/?limit=10');
+        const jobs = await response.json();
+
+        // Use client-side sort if API doesn't support it yet (assuming API returns ID ASC)
+        // Reverse to show newest first
+        const sortedJobs = jobs.reverse(); // or sort by date/time
+
+        const tbody = document.getElementById('todayJobsBody');
+        tbody.innerHTML = '';
+
+        if (sortedJobs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No jobs found</td></tr>';
+            return;
+        }
+
+        const statusColors = {
+            'pending': 'bg-red-100 text-red-800',
+            'assigned': 'bg-blue-100 text-blue-800',
+            'in_progress': 'bg-yellow-100 text-yellow-800',
+            'completed': 'bg-green-100 text-green-800',
+            'cancelled': 'bg-gray-100 text-gray-800'
+        };
+
+        sortedJobs.forEach(job => {
+            const tr = document.createElement('tr');
+            const statusClass = statusColors[job.status] || 'bg-gray-100 text-gray-800';
+
+            let assignedTo = '<span class="text-gray-400 italic">Unassigned</span>';
+            if (job.assignments && job.assignments.length > 0) {
+                assignedTo = job.assignments.map(a => a.technician.full_name).join(', ');
+            }
+
+            tr.innerHTML = `
+                <td class="px-6 py-4">
+                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full uppercase ${statusClass}">
+                        ${job.status.replace('_', ' ')}
+                    </span>
+                </td>
+                <td class="px-6 py-4 font-medium text-gray-900">${job.title}</td>
+                <td class="px-6 py-4">
+                    ${job.customer_name}
+                    <div class="text-xs text-gray-500">${job.customer_phone}</div>
+                </td>
+                <td class="px-6 py-4 text-xs">${assignedTo}</td>
+                <td class="px-6 py-4">
+                    ${job.scheduled_date} <span class="text-gray-500 text-xs">${job.scheduled_time || ''}</span>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+</script>
+{% endblock %}

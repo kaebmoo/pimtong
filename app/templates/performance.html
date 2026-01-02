@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block header %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Performance Analytics</h1>
+    <div class="text-sm text-gray-500">Overview for current month</div>
+</div>
+
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6 border-b-4 border-blue-500">
+        <div class="text-gray-500 text-sm uppercase tracking-wider font-semibold">Total Jobs</div>
+        <div class="text-3xl font-bold text-gray-800 mt-2" id="kpi-total">-</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6 border-b-4 border-green-500">
+        <div class="text-gray-500 text-sm uppercase tracking-wider font-semibold">Completed</div>
+        <div class="text-3xl font-bold text-gray-800 mt-2" id="kpi-completed">-</div>
+        <div class="text-xs text-green-600 mt-1" id="kpi-rate">0% Rate</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6 border-b-4 border-yellow-500">
+        <div class="text-gray-500 text-sm uppercase tracking-wider font-semibold">Pending/Active</div>
+        <div class="text-3xl font-bold text-gray-800 mt-2" id="kpi-active">-</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6 border-b-4 border-purple-500">
+        <div class="text-gray-500 text-sm uppercase tracking-wider font-semibold">Technicians</div>
+        <div class="text-3xl font-bold text-gray-800 mt-2" id="kpi-techs">-</div>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <!-- Status Distribution -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Job Status Distribution</h3>
+        <div class="relative h-64">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Job Type Distribution -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Job Types</h3>
+        <div class="relative h-64">
+            <canvas id="typeChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 & Table -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Workload Trend -->
+    <div class="bg-white shadow rounded-lg p-6 lg:col-span-2">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Daily Workload (Last 7 Days)</h3>
+        <div class="relative h-64">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Top Technicians -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Technician Workload</h3>
+        <div class="overflow-y-auto h-64">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-gray-500 border-b">
+                        <th class="pb-2">Name</th>
+                        <th class="pb-2 text-right">Jobs</th>
+                    </tr>
+                </thead>
+                <tbody id="techTableBody" class="text-gray-700">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadPerformanceData();
+    });
+
+    async function loadPerformanceData() {
+        // Fetch Data
+        const [jobsRes, usersRes] = await Promise.all([
+            fetch('/api/jobs/?limit=1000'),
+            fetch('/api/users/?limit=100')
+        ]);
+
+        const jobs = await jobsRes.json();
+        const users = await usersRes.json();
+        const technicians = users.filter(u => u.role === 'technician' || u.role === 'admin');
+
+        // --- KPIS ---
+        const total = jobs.length;
+        const completed = jobs.filter(j => j.status === 'completed').length;
+        const active = jobs.filter(j => ['pending', 'assigned', 'in_progress'].includes(j.status)).length;
+        const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        document.getElementById('kpi-total').innerText = total;
+        document.getElementById('kpi-completed').innerText = completed;
+        document.getElementById('kpi-active').innerText = active;
+        document.getElementById('kpi-rate').innerText = `${rate}% Rate`;
+        document.getElementById('kpi-techs').innerText = technicians.length;
+
+        // --- CHARTS ---
+
+        // 1. Status Distribution (Doughnut)
+        const statusCounts = {
+            'pending': 0, 'assigned': 0, 'in_progress': 0, 'completed': 0, 'cancelled': 0
+        };
+        jobs.forEach(j => { if (statusCounts[j.status] !== undefined) statusCounts[j.status]++ });
+
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'Assigned', 'In Progress', 'Completed', 'Cancelled'],
+                datasets: [{
+                    data: Object.values(statusCounts),
+                    backgroundColor: ['#ef4444', '#3b82f6', '#eab308', '#22c55e', '#9ca3af']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // 2. Job Types (Pie)
+        const typeCounts = {};
+        jobs.forEach(j => {
+            typeCounts[j.job_type] = (typeCounts[j.job_type] || 0) + 1;
+        });
+
+        new Chart(document.getElementById('typeChart'), {
+            type: 'pie',
+            data: {
+                labels: Object.keys(typeCounts).map(s => s.charAt(0).toUpperCase() + s.slice(1)),
+                datasets: [{
+                    data: Object.values(typeCounts),
+                    backgroundColor: ['#0ea5e9', '#6366f1', '#8b5cf6', '#ec4899']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // 3. Daily Trend (Bar)
+        // Last 7 days
+        const labels = [];
+        const data = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            labels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
+            data.push(jobs.filter(j => j.scheduled_date === dateStr).length);
+        }
+
+        new Chart(document.getElementById('trendChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Jobs Scheduled',
+                    data: data,
+                    backgroundColor: '#0ea5e9',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+
+        // --- TECH TABLE ---
+        const techWorkload = {};
+        technicians.forEach(t => techWorkload[t.id] = { name: t.full_name, count: 0 });
+
+        jobs.forEach(j => {
+            if (j.assignments) {
+                j.assignments.forEach(a => {
+                    if (techWorkload[a.technician.id]) {
+                        techWorkload[a.technician.id].count++;
+                    }
+                });
+            }
+        });
+
+        const sortedTechs = Object.values(techWorkload).sort((a, b) => b.count - a.count);
+        const tbody = document.getElementById('techTableBody');
+        tbody.innerHTML = '';
+
+        sortedTechs.forEach(t => {
+            const tr = document.createElement('tr');
+            tr.className = "border-b last:border-0";
+            tr.innerHTML = `
+                <td class="py-2">${t.name}</td>
+                <td class="py-2 text-right font-bold text-gray-700">${t.count}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+</script>
+{% endblock %}

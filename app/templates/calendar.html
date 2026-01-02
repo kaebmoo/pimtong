@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Calendar</h1>
+    <div class="flex space-x-2">
+        <span
+            class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">Pending</span>
+        <span
+            class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">Assigned</span>
+        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800">In
+            Progress</span>
+        <span
+            class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">Completed</span>
+    </div>
+</div>
+
+<div class="bg-white shadow rounded-lg p-6">
+    <div id='calendar'></div>
+</div>
+
+<!-- Job Details Modal -->
+<div id="eventModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modalTitle">Job Details</h3>
+            <div class="mt-2 space-y-3 text-sm text-gray-600">
+                <div>
+                    <span class="font-bold block text-gray-700">Time:</span>
+                    <span id="modalTime"></span>
+                </div>
+                <div>
+                    <span class="font-bold block text-gray-700">Customer:</span>
+                    <span id="modalCustomer"></span>
+                </div>
+                <div>
+                    <span class="font-bold block text-gray-700">Technicians:</span>
+                    <span id="modalTechs"></span>
+                </div>
+                <div>
+                    <span class="font-bold block text-gray-700">Address:</span>
+                    <span id="modalAddress"></span>
+                </div>
+                <div>
+                    <span class="font-bold block text-gray-700">Status:</span>
+                    <span id="modalStatus" class="uppercase"></span>
+                </div>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="closeModal"
+                    class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: async function (info, successCallback, failureCallback) {
+                const response = await fetch('/api/jobs/?limit=1000');
+                const jobs = await response.json();
+
+                const events = jobs.map(job => {
+                    let color = '#gray';
+                    if (job.status === 'pending') color = '#dc2626'; // red-600
+                    if (job.status === 'assigned') color = '#2563eb'; // blue-600
+                    if (job.status === 'in_progress') color = '#ca8a04'; // yellow-600
+                    if (job.status === 'completed') color = '#16a34a'; // green-600
+
+                    // Format Technicians
+                    const techs = job.assignments && job.assignments.length > 0
+                        ? job.assignments.map(a => a.technician.full_name).join(', ')
+                        : 'Unassigned';
+
+                    // Format Time
+                    const timeStr = job.scheduled_time ? job.scheduled_time : '';
+
+                    // Title: [Time] Job (Techs)
+                    let titleStr = job.title;
+                    // Auto time display by FullCalendar
+                    titleStr += ` (${techs})`;
+
+                    return {
+                        title: titleStr,
+                        start: job.scheduled_date + (job.scheduled_time ? 'T' + job.scheduled_time : ''),
+                        allDay: !job.scheduled_time,
+                        backgroundColor: color,
+                        borderColor: color,
+                        extendedProps: {
+                            description: job.description,
+                            customer: job.customer_name + ' (' + job.customer_phone + ')',
+                            address: job.customer_address,
+                            techs: techs,
+                            status: job.status,
+                            time: timeStr || 'Anytime'
+                        }
+                    };
+                });
+                successCallback(events);
+            },
+            eventClick: function (info) {
+                info.jsEvent.preventDefault();
+                const props = info.event.extendedProps;
+
+                document.getElementById('modalTitle').innerText = info.event.title;
+                document.getElementById('modalTime').innerText = props.time;
+                document.getElementById('modalCustomer').innerText = props.customer;
+                document.getElementById('modalTechs').innerText = props.techs;
+                document.getElementById('modalAddress').innerText = props.address;
+                document.getElementById('modalStatus').innerText = props.status.replace('_', ' ');
+
+                document.getElementById('eventModal').classList.remove('hidden');
+            }
+        });
+        calendar.render();
+
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('eventModal').classList.add('hidden');
+        });
+
+        // Close on click outside
+        document.getElementById('eventModal').addEventListener('click', (e) => {
+            if (e.target.id === 'eventModal') {
+                document.getElementById('eventModal').classList.add('hidden');
+            }
+        });
+    });
+</script>
+{% endblock %}
