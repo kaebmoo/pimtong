@@ -104,6 +104,7 @@ def read_jobs(
     skip: int = 0, 
     limit: int = 100, 
     project_id: Optional[int] = None,
+    search: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -120,6 +121,25 @@ def read_jobs(
         
     if project_id:
         query = query.filter(Job.project_id == project_id)
+        
+    if search:
+        search_term = f"%{search}%"
+        # Check if search is strictly an integer for ID lookup
+        id_match = None
+        try:
+            id_match = int(search)
+        except ValueError:
+            pass
+            
+        filters = [
+            Job.title.ilike(search_term),
+            Job.customer_name.ilike(search_term),
+            Job.description.ilike(search_term)
+        ]
+        if id_match is not None:
+            filters.append(Job.id == id_match)
+            
+        query = query.filter(or_(*filters))
         
     jobs = query.offset(skip).limit(limit).all()
     return jobs

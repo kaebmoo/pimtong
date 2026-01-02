@@ -247,11 +247,21 @@
     async function loadJobs() {
         const urlParams = new URLSearchParams(window.location.search);
         const projectId = urlParams.get('project_id');
+        const search = urlParams.get('search');
 
         let url = '/api/jobs/';
-        if (projectId) {
-            url += `?project_id=${projectId}`;
+        let params = [];
+
+        if (projectId) params.push(`project_id=${projectId}`);
+        if (search) params.push(`search=${search}`);
+
+        if (params.length > 0) {
+            url += '?' + params.join('&');
         }
+
+        // Sync search bar if present
+        const searchInput = document.getElementById('globalSearch');
+        if (searchInput && search) searchInput.value = search;
 
         const response = await fetch(url);
         const jobs = await response.json();

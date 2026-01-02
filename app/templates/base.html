@@ -102,8 +102,10 @@
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center">
                             <i class="fas fa-search text-gray-500"></i>
                         </span>
-                        <input class="form-input w-32 sm:w-64 rounded-md pl-10 pr-4 focus:border-primary" type="text"
-                            placeholder="Search...">
+                        <input id="globalSearch"
+                            class="form-input w-32 sm:w-64 rounded-md pl-10 pr-4 focus:border-primary" type="text"
+                            placeholder="Search Jobs..."
+                            onkeydown="if(event.key === 'Enter') window.location.href='/jobs?search=' + this.value">
                     </div>
                 </div>
 
