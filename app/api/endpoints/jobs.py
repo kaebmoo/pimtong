@@ -141,7 +141,7 @@ def read_jobs(
             
         query = query.filter(or_(*filters))
         
-    jobs = query.offset(skip).limit(limit).all()
+    jobs = query.order_by(Job.id.desc()).offset(skip).limit(limit).all()
     return jobs
 
 @router.get("/{job_id}", response_model=JobOut)

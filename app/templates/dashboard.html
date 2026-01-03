@@ -74,7 +74,7 @@
     });
 
     async function loadDashboardStats() {
-        const response = await fetch('/api/jobs/?limit=1000'); // Fetch all for stats
+        const response = await fetch('/api/jobs/?limit=1000&t=' + Date.now()); // Fetch all for stats
         const jobs = await response.json();
 
         const todayStr = new Date().toISOString().split('T')[0];
@@ -90,12 +90,12 @@
 
     async function loadRecentJobs() {
         // Fetch recent jobs, limited to 10
-        const response = await fetch('/api/jobs/?limit=10');
+        // Use timestamp to prevent caching
+        const response = await fetch('/api/jobs/?limit=10&t=' + Date.now());
         const jobs = await response.json();
 
-        // Use client-side sort if API doesn't support it yet (assuming API returns ID ASC)
-        // Reverse to show newest first
-        const sortedJobs = jobs.reverse(); // or sort by date/time
+        // API now returns Newest First (Desc), so no need to reverse
+        const sortedJobs = jobs;
 
         const tbody = document.getElementById('todayJobsBody');
         tbody.innerHTML = '';
