@@ -61,7 +61,17 @@ TRANSLATIONS = {
     "label_date": {"en": "Date", "th": "วันที่"},
     "label_time": {"en": "Time", "th": "เวลา"},
     "label_location": {"en": "Location (Map)", "th": "พิกัดแผนที่"},
+    "label_location": {"en": "Location (Map)", "th": "พิกัดแผนที่"},
     "label_assign": {"en": "Assign Technicians", "th": "มอบหมายช่าง"},
+    "label_product_type": {"en": "Product Type", "th": "ประเภทสินค้า"},
+    "label_model": {"en": "Model", "th": "รุ่น"},
+    "label_serial": {"en": "Serial Number", "th": "หมายเลขเครื่อง"},
+    "tab_details": {"en": "Details", "th": "รายละเอียด"},
+    "tab_history": {"en": "History & Logs", "th": "ประวัติการทำงาน"},
+    "btn_add_note": {"en": "Add Note", "th": "เพิ่มบันทึก"},
+    "placeholder_note": {"en": "Enter note...", "th": "ระบุรายละเอียด..."},
+    "header_history": {"en": "Job History", "th": "ประวัติการดำเนินงาน"},
+    "btn_print": {"en": "Print Job Sheet", "th": "พิมพ์ใบงาน"},
     
     # --- Projects ---
     "proj_header": {"en": "Projects", "th": "โครงการทั้งหมด"},

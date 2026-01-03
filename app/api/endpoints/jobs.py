@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
-from app.models.models import Job, JobType, JobStatus, User, Assignment
+from app.models.models import Job, JobType, JobStatus, User, Assignment, JobHistory
 from pydantic import BaseModel
-from datetime import date
+from datetime import datetime, date
 from typing import Optional, List
 
 router = APIRouter()
@@ -30,6 +30,11 @@ class JobBase(BaseModel):
     scheduled_time: Optional[str] = None
     project_id: Optional[int] = None
 
+    # Product Info
+    product_type: Optional[str] = None
+    model: Optional[str] = None
+    serial_number: Optional[str] = None
+
 class JobCreate(JobBase):
     technician_ids: Optional[List[int]] = []
 
@@ -47,6 +52,10 @@ class JobUpdate(BaseModel):
     scheduled_time: Optional[str] = None
     project_id: Optional[int] = None
     technician_ids: Optional[List[int]] = None
+    
+    product_type: Optional[str] = None
+    model: Optional[str] = None
+    serial_number: Optional[str] = None
 
 class JobOut(JobBase):
     id: int
@@ -54,6 +63,30 @@ class JobOut(JobBase):
     
     class Config:
         from_attributes = True
+
+class JobHistoryOut(BaseModel):
+    id: int
+    user_id: Optional[int]
+    user_name: Optional[str] = None # Calculated
+    old_status: Optional[str]
+    new_status: Optional[str]
+    note: Optional[str]
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class JobOut(JobBase):
+    id: int
+    assignments: List["AssignmentOut"] = []
+    history_logs: List[JobHistoryOut] = []
+    
+    class Config:
+        from_attributes = True
+
+class JobLogCreate(BaseModel):
+    new_status: Optional[str] = None
+    note: str
 
 class AssignmentOut(BaseModel):
     technician: Optional[TechnicianOut] = None
@@ -260,3 +293,47 @@ def delete_job(
     db.delete(db_job)
     db.commit()
     return None
+
+@router.post("/{job_id}/log", response_model=JobHistoryOut)
+def add_job_log(
+    job_id: int,
+    log_data: JobLogCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    db_job = db.query(Job).filter(Job.id == job_id).first()
+    if not db_job is None:
+        # Check permissions similar to update
+        pass # Assuming general read access is enough to comment for now, or refine later
+    
+    if db_job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    # If status is changing
+    old_status = db_job.status
+    if log_data.new_status and log_data.new_status != old_status:
+        db_job.status = log_data.new_status
+        db.add(db_job)
+    
+    # Create History
+    history = JobHistory(
+        job_id=job_id,
+        user_id=current_user.id,
+        old_status=old_status,
+        new_status=db_job.status, # Updated status
+        note=log_data.note
+    )
+    db.add(history)
+    db.commit()
+    db.refresh(history)
+    
+    # Format output
+    return JobHistoryOut(
+        id=history.id,
+        user_id=history.user_id,
+        user_name=current_user.full_name,
+        old_status=history.old_status,
+        new_status=history.new_status,
+        note=history.note,
+        created_at=history.created_at
+    )

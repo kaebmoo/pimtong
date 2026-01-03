@@ -5,9 +5,9 @@ from fastapi.templating import Jinja2Templates
 from app.core.config import settings
 from app.core.i18n import get_translation
 from app.api.api import api_router
-from app.core.database import engine, Base, SessionLocal
+from app.core.database import engine, Base, SessionLocal, get_db
 from app.core.security import get_password_hash
-from app.models.models import User, UserRole
+from app.models.models import User, UserRole, Job
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
@@ -207,6 +207,28 @@ async def read_reports_page(
         return RedirectResponse(url="/")
     lang = request.cookies.get("app_lang", "th")
     return templates.TemplateResponse("reports.html", {"request": request, "user": user, "lang": lang})
+
+@app.get("/print/job/{job_id}", response_class=HTMLResponse)
+async def print_job_page(
+    job_id: int,
+    request: Request,
+    user: Optional[User] = Depends(get_current_user_from_cookie),
+    db: SessionLocal = Depends(get_db)
+):
+    if not user:
+        return RedirectResponse(url="/login")
+        
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        return HTMLResponse("Job not found", status_code=404)
+        
+    lang = request.cookies.get("app_lang", "th")
+    return templates.TemplateResponse("job_print.html", {
+        "request": request, 
+        "user": user, 
+        "job": job,
+        "lang": lang
+    })
 
 if __name__ == "__main__":
     import uvicorn

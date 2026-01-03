@@ -80,6 +80,12 @@ class Job(Base):
     customer_name = Column(String)
     customer_phone = Column(String)
     customer_address = Column(Text)
+    
+    # Product Info
+    product_type = Column(String, nullable=True) # e.g. "Air Conditioner"
+    model = Column(String, nullable=True)
+    serial_number = Column(String, nullable=True)
+
     location_lat = Column(String, nullable=True)
     location_long = Column(String, nullable=True)
     
@@ -91,6 +97,23 @@ class Job(Base):
 
     project = relationship("Project", back_populates="jobs")
     assignments = relationship("Assignment", back_populates="job")
+    history_logs = relationship("JobHistory", back_populates="job", cascade="all, delete-orphan")
+
+class JobHistory(Base):
+    __tablename__ = "job_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    job_id = Column(Integer, ForeignKey("jobs.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True) # Who made the change
+    
+    old_status = Column(String, nullable=True)
+    new_status = Column(String, nullable=True)
+    note = Column(Text, nullable=True)
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    job = relationship("Job", back_populates="history_logs")
+    user = relationship("User")
 
 class Assignment(Base):
     __tablename__ = "assignments"
