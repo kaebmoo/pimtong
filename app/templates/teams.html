@@ -2,10 +2,10 @@
 
 {% block content %}
 <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">Team Management</h1>
+    <h1 class="text-3xl font-bold text-gray-800">{{ t('team_header', lang) }}</h1>
     <button onclick="openModal()"
         class="bg-primary hover:bg-sky-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
-        <i class="fas fa-plus mr-2"></i> Create New Team
+        <i class="fas fa-plus mr-2"></i> {{ t('btn_create_team', lang) }}
     </button>
 </div>
 
@@ -13,11 +13,15 @@
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
             <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Color</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team Name
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{
+                    t('col_color', lang) }}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{
+                    t('col_team_name', lang) }}
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Members</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{
+                    t('col_members', lang) }}</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{
+                    t('col_actions', lang) }}</th>
             </tr>
         </thead>
         <tbody id="teamTableBody" class="bg-white divide-y divide-gray-200">
@@ -30,20 +34,23 @@
 <div id="teamModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" x-show="open">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="modalTitle">Create Team</h3>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="modalTitle">{{
+                t('modal_create_team', lang) }}</h3>
             <div class="mt-4">
                 <form id="teamForm">
                     <input type="hidden" id="teamId">
 
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="name">Team Name</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="name">{{ t('label_team_name',
+                            lang) }}</label>
                         <input
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="name" type="text" required>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="color">Team Color</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="color">{{ t('label_team_color',
+                            lang) }}</label>
                         <input class="shadow appearance-none border rounded w-full h-10 p-1 block cursor-pointer"
                             id="color" type="color" value="#0ea5e9">
                     </div>
@@ -51,11 +58,11 @@
                     <div class="flex items-center justify-end gap-2">
                         <button type="button" onclick="closeModal()"
                             class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Cancel
+                            {{ t('btn_cancel', lang) }}
                         </button>
                         <button type="submit"
                             class="bg-primary hover:bg-sky-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Save
+                            {{ t('btn_save', lang) }}
                         </button>
                     </div>
                 </form>
@@ -87,7 +94,7 @@
                     <div class="text-sm text-gray-500">${team.member_count} Members</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onclick='editTeam(${JSON.stringify(team)})' class="text-indigo-600 hover:text-indigo-900">Edit</button>
+                    <button onclick='editTeam(${JSON.stringify(team)})' class="text-indigo-600 hover:text-indigo-900">{{ t('btn_edit', lang) }}</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -98,7 +105,7 @@
     const form = document.getElementById('teamForm');
 
     function openModal() {
-        document.getElementById('modalTitle').innerText = "Create Team";
+        document.getElementById('modalTitle').innerText = "{{ t('modal_create_team', lang) }}";
         form.reset();
         document.getElementById('teamId').value = '';
         modal.classList.remove('hidden');
@@ -109,7 +116,7 @@
     }
 
     function editTeam(team) {
-        document.getElementById('modalTitle').innerText = "Edit Team";
+        document.getElementById('modalTitle').innerText = "{{ t('modal_edit_team', lang) }}";
         document.getElementById('teamId').value = team.id;
         document.getElementById('name').value = team.name;
         document.getElementById('color').value = team.color;
@@ -135,7 +142,7 @@
             closeModal();
             loadTeams();
         } else {
-            alert("Error saving team");
+            alert("{{ t('err_error', lang) }}");
         }
     });
 </script>

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="text-3xl font-bold text-gray-800 mb-6">Today's Overview</h1>
+<h1 class="text-3xl font-bold text-gray-800 mb-6">{{ t('header_dashboard', lang) }}</h1>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
     <!-- New Jobs -->
@@ -11,7 +11,8 @@
                 <i class="fas fa-clipboard-list fa-2x"></i>
             </div>
             <div>
-                <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">Pending Jobs</p>
+                <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">{{ t('dash_pending_jobs', lang) }}
+                </p>
                 <p class="text-3xl font-bold text-gray-700" id="stat-pending">-</p>
             </div>
         </div>
@@ -24,7 +25,8 @@
                 <i class="fas fa-tools fa-2x"></i>
             </div>
             <div>
-                <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">In Progress</p>
+                <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">{{ t('dash_in_progress', lang) }}
+                </p>
                 <p class="text-3xl font-bold text-gray-700" id="stat-progress">-</p>
             </div>
         </div>
@@ -37,7 +39,8 @@
                 <i class="fas fa-check-circle fa-2x"></i>
             </div>
             <div>
-                <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">Completed Today</p>
+                <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">{{ t('dash_completed_today', lang)
+                    }}</p>
                 <p class="text-3xl font-bold text-gray-700" id="stat-completed">-</p>
             </div>
         </div>
@@ -47,17 +50,17 @@
 <!-- Job List -->
 <div class="bg-white shadow rounded-lg mb-8">
     <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-bold text-gray-900">Recent &amp; Urgent Jobs</h3>
+        <h3 class="text-lg font-bold text-gray-900">{{ t('header_recent_jobs', lang) }}</h3>
     </div>
     <div class="p-0 overflow-x-auto">
         <table class="w-full text-left table-auto">
             <thead>
                 <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                    <th class="px-6 py-3 font-medium">Status</th>
-                    <th class="px-6 py-3 font-medium">Job Title</th>
-                    <th class="px-6 py-3 font-medium">Customer</th>
-                    <th class="px-6 py-3 font-medium">Technician</th>
-                    <th class="px-6 py-3 font-medium">Date</th>
+                    <th class="px-6 py-3 font-medium">{{ t('col_status', lang) }}</th>
+                    <th class="px-6 py-3 font-medium">{{ t('col_title', lang) }}</th>
+                    <th class="px-6 py-3 font-medium">{{ t('col_customer', lang) }}</th>
+                    <th class="px-6 py-3 font-medium">{{ t('col_technician', lang) }}</th>
+                    <th class="px-6 py-3 font-medium">{{ t('col_date', lang) }}</th>
                 </tr>
             </thead>
             <tbody id="todayJobsBody" class="divide-y divide-gray-200 text-sm text-gray-700">
@@ -101,7 +104,7 @@
         tbody.innerHTML = '';
 
         if (sortedJobs.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No jobs found</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">${translations.no_jobs}</td></tr>`;
             return;
         }
 
@@ -113,11 +116,23 @@
             'cancelled': 'bg-gray-100 text-gray-800'
         };
 
+        const translations = {
+            unassigned: "{{ t('label_unassigned', lang) }}",
+            no_jobs: "{{ t('text_no_data', lang) }}",
+            status: {
+                pending: "{{ t('status_pending', lang) }}",
+                assigned: "{{ t('status_assigned', lang) }}",
+                in_progress: "{{ t('status_in_progress', lang) }}",
+                completed: "{{ t('status_completed', lang) }}",
+                cancelled: "{{ t('status_cancelled', lang) }}",
+            }
+        };
+
         sortedJobs.forEach(job => {
             const tr = document.createElement('tr');
             const statusClass = statusColors[job.status] || 'bg-gray-100 text-gray-800';
 
-            let assignedTo = '<span class="text-gray-400 italic">Unassigned</span>';
+            let assignedTo = `<span class="text-gray-400 italic">${translations.unassigned}</span>`;
             if (job.assignments && job.assignments.length > 0) {
                 assignedTo = job.assignments.map(a => a.technician ? a.technician.full_name : 'Unknown User').join(', ');
             }
@@ -125,7 +140,7 @@
             tr.innerHTML = `
                 <td class="px-6 py-4">
                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full uppercase ${statusClass}">
-                        ${job.status.replace('_', ' ')}
+                        ${translations.status[job.status] || job.status.replace('_', ' ')}
                     </span>
                 </td>
                 <td class="px-6 py-4 font-medium text-gray-900">${job.title}</td>

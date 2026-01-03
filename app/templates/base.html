@@ -46,42 +46,42 @@
             <nav class="mt-4">
                 <a href="/"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
-                    <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                    <i class="fas fa-tachometer-alt mr-2"></i> {{ t('menu_dashboard', lang) }}
                 </a>
                 <a href="/jobs"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
-                    <i class="fas fa-clipboard-list mr-2"></i> Work Orders
+                    <i class="fas fa-clipboard-list mr-2"></i> {{ t('menu_work_orders', lang) }}
                 </a>
 
                 <a href="/projects"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
-                    <i class="fas fa-project-diagram mr-2"></i> Projects
+                    <i class="fas fa-project-diagram mr-2"></i> {{ t('menu_projects', lang) }}
                 </a>
 
                 <a href="/calendar"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
-                    <i class="fas fa-calendar-alt mr-2"></i> Calendar
+                    <i class="fas fa-calendar-alt mr-2"></i> {{ t('menu_calendar', lang) }}
                 </a>
 
                 {% if user.role in ['admin', 'staff'] %}
                 <a href="/reports"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
-                    <i class="fas fa-chart-line mr-2"></i> Reports
+                    <i class="fas fa-chart-line mr-2"></i> {{ t('menu_reports', lang) }}
                 </a>
                 {% endif %}
 
                 {% if user.role == 'admin' or user.role == 'manager' or user.role == 'staff' %}
                 <a href="/teams"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
-                    <i class="fas fa-users-cog mr-2"></i> Teams
+                    <i class="fas fa-users-cog mr-2"></i> {{ t('menu_teams', lang) }}
                 </a>
                 <a href="/team"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
-                    <i class="fas fa-user-friends mr-2"></i> Users
+                    <i class="fas fa-user-friends mr-2"></i> {{ t('menu_users', lang) }}
                 </a>
                 <a href="/performance"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
-                    <i class="fas fa-chart-line mr-2"></i> Performance
+                    <i class="fas fa-chart-line mr-2"></i> {{ t('menu_performance', lang) }}
                 </a>
                 {% endif %}
             </nav>
@@ -104,12 +104,20 @@
                         </span>
                         <input id="globalSearch"
                             class="form-input w-32 sm:w-64 rounded-md pl-10 pr-4 focus:border-primary" type="text"
-                            placeholder="Search Jobs..."
+                            placeholder="{{ t('search_placeholder', lang) }}"
                             onkeydown="if(event.key === 'Enter') window.location.href='/jobs?search=' + this.value">
                     </div>
                 </div>
 
                 <div class="flex items-center gap-4">
+                    <!-- Language Switcher -->
+                    <div class="flex items-center gap-2 text-sm text-gray-600 bg-gray-100 rounded-full px-3 py-1">
+                        <a href="/set-language/en"
+                            class="{{ 'font-bold text-primary' if lang == 'en' else 'hover:text-gray-900' }}">EN</a>
+                        <span class="text-gray-300">|</span>
+                        <a href="/set-language/th"
+                            class="{{ 'font-bold text-primary' if lang == 'th' else 'hover:text-gray-900' }}">TH</a>
+                    </div>
                     <div class="flex items-center gap-2 mr-2 text-right">
                         <div class="text-sm font-semibold text-gray-700">{{ user.full_name }}</div>
                         <div class="text-xs text-gray-500 capitalize">{{ user.role }}</div>
@@ -124,10 +132,11 @@
                         <!-- Dropdown -->
                         <div class="absolute right-0 top-full pt-2 w-48 z-20 hidden group-hover:block hover:block">
                             <div class="bg-white rounded-md overflow-hidden shadow-xl">
-                                <a href="/profile"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                                <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{{
+                                    t('btn_profile', lang) }}</a>
                                 <a href="#" onclick="logout()"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{{ t('btn_logout',
+                                    lang) }}</a>
                             </div>
                         </div>
                     </div>

@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto py-8">
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">My Profile</h1>
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ t('header_profile', lang) }}</h1>
 
     <div class="bg-white shadow rounded-lg p-6">
         <form id="profileForm" class="space-y-6">
@@ -18,21 +18,22 @@
             </div>
 
             <div>
-                <label for="full_name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                <label for="full_name" class="block text-sm font-medium text-gray-700">{{ t('label_fullname', lang)
+                    }}</label>
                 <input type="text" id="full_name" name="full_name"
                     class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
             </div>
 
             <div>
-                <label for="password" class="block text-sm font-medium text-gray-700">New Password (leave blank to keep
-                    current)</label>
+                <label for="password" class="block text-sm font-medium text-gray-700">{{ t('label_new_password', lang)
+                    }}</label>
                 <input type="password" id="password" name="password"
                     class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
             </div>
 
             <div>
-                <label for="confirm_password" class="block text-sm font-medium text-gray-700">Confirm New
-                    Password</label>
+                <label for="confirm_password" class="block text-sm font-medium text-gray-700">{{
+                    t('label_confirm_password', lang) }}</label>
                 <input type="password" id="confirm_password"
                     class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
             </div>
@@ -40,7 +41,7 @@
             <div class="flex justify-end">
                 <button type="submit"
                     class="bg-primary hover:bg-sky-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Save Changes
+                    {{ t('btn_save', lang) }}
                 </button>
             </div>
         </form>
@@ -70,11 +71,18 @@
 
     document.getElementById('profileForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        const translations = {
+            mismatch: "{{ t('alert_pwd_mismatch', lang) }}",
+            updated: "{{ t('alert_profile_updated', lang) }}",
+            error: "{{ t('alert_update_error', lang) }}"
+        };
+
         const pwd = document.getElementById('password').value;
         const confirm = document.getElementById('confirm_password').value;
 
         if (pwd && pwd !== confirm) {
-            alert("Passwords do not match!");
+            alert(translations.mismatch);
             return;
         }
 
@@ -92,12 +100,12 @@
         });
 
         if (response.ok) {
-            alert("Profile updated!");
+            alert(translations.updated);
             // Reload to refresh potential name changes in UI header
             location.reload();
         } else {
             const err = await response.json();
-            alert("Error updating profile: " + (err.detail || "Unknown error"));
+            alert(translations.error + ": " + (err.detail || "Unknown error"));
         }
     });
 </script>

@@ -6,29 +6,29 @@
 
 {% block content %}
 <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">Reports</h1>
+    <h1 class="text-3xl font-bold text-gray-800">{{ t('rep_header', lang) }}</h1>
     <button onclick="exportCSV()"
         class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
-        <i class="fas fa-file-export mr-2"></i> Export CSV
+        <i class="fas fa-file-export mr-2"></i> {{ t('btn_export_csv', lang) }}
     </button>
 </div>
 
 <!-- Stats Overview -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
     <div class="bg-white overflow-hidden shadow rounded-lg px-4 py-5 sm:p-6">
-        <dt class="text-sm font-medium text-gray-500 truncate">Total Jobs</dt>
+        <dt class="text-sm font-medium text-gray-500 truncate">{{ t('rep_total_jobs', lang) }}</dt>
         <dd class="mt-1 text-3xl font-semibold text-gray-900" id="stat-total">-</dd>
     </div>
     <div class="bg-white overflow-hidden shadow rounded-lg px-4 py-5 sm:p-6">
-        <dt class="text-sm font-medium text-gray-500 truncate">Completed</dt>
+        <dt class="text-sm font-medium text-gray-500 truncate">{{ t('rep_completed', lang) }}</dt>
         <dd class="mt-1 text-3xl font-semibold text-green-600" id="stat-completed">-</dd>
     </div>
     <div class="bg-white overflow-hidden shadow rounded-lg px-4 py-5 sm:p-6">
-        <dt class="text-sm font-medium text-gray-500 truncate">In Progress</dt>
+        <dt class="text-sm font-medium text-gray-500 truncate">{{ t('rep_in_progress', lang) }}</dt>
         <dd class="mt-1 text-3xl font-semibold text-yellow-600" id="stat-progress">-</dd>
     </div>
     <div class="bg-white overflow-hidden shadow rounded-lg px-4 py-5 sm:p-6">
-        <dt class="text-sm font-medium text-gray-500 truncate">Completion Rate</dt>
+        <dt class="text-sm font-medium text-gray-500 truncate">{{ t('rep_completion_rate', lang) }}</dt>
         <dd class="mt-1 text-3xl font-semibold text-indigo-600" id="stat-rate">-%</dd>
     </div>
 </div>
@@ -36,7 +36,7 @@
 <!-- Charts -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <div class="bg-white shadow rounded-lg p-6">
-        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Jobs by Technician</h3>
+        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ t('chart_jobs_by_tech', lang) }}</h3>
         <canvas id="techChart"></canvas>
     </div>
     <!-- Placeholder for another chart -->
@@ -70,7 +70,7 @@
             data: {
                 labels: data.map(d => d.name),
                 datasets: [{
-                    label: 'Jobs Assigned',
+                    label: "{{ t('chart_jobs_by_tech', lang) }}",
                     data: data.map(d => d.count),
                     backgroundColor: 'rgba(79, 70, 229, 0.6)',
                     borderColor: 'rgba(79, 70, 229, 1)',

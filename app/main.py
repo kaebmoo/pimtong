@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.core.config import settings
+from app.core.i18n import get_translation
 from app.api.api import api_router
 from app.core.database import engine, Base, SessionLocal
 from app.core.security import get_password_hash
@@ -91,10 +92,19 @@ from app.models.models import User
 from typing import Optional
 
 templates = Jinja2Templates(directory="app/templates")
+templates.env.globals['t'] = get_translation
+
+@app.get("/set-language/{lang}")
+async def set_language(lang: str, request: Request):
+    referer = request.headers.get("referer", "/")
+    response = RedirectResponse(url=referer)
+    response.set_cookie(key="app_lang", value=lang, max_age=31536000) # 1 year
+    return response
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    lang = request.cookies.get("app_lang", "th")
+    return templates.TemplateResponse("login.html", {"request": request, "lang": lang})
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(
@@ -103,7 +113,8 @@ async def read_root(
 ):
     if not user:
         return RedirectResponse(url="/login")
-    return templates.TemplateResponse("dashboard.html", {"request": request, "user": user})
+    lang = request.cookies.get("app_lang", "th")
+    return templates.TemplateResponse("dashboard.html", {"request": request, "user": user, "lang": lang})
 
 @app.get("/team", response_class=HTMLResponse)
 async def read_team(
@@ -116,7 +127,8 @@ async def read_team(
          # Simple RBAC: View Only or Restricted? 
          # For now allow view but maybe hide controls in template
          pass
-    return templates.TemplateResponse("users.html", {"request": request, "user": user})
+    lang = request.cookies.get("app_lang", "th")
+    return templates.TemplateResponse("users.html", {"request": request, "user": user, "lang": lang})
 
 @app.get("/jobs", response_class=HTMLResponse)
 async def read_jobs_page(
@@ -125,7 +137,8 @@ async def read_jobs_page(
 ):
     if not user:
         return RedirectResponse(url="/login")
-    return templates.TemplateResponse("jobs.html", {"request": request, "user": user})
+    lang = request.cookies.get("app_lang", "th")
+    return templates.TemplateResponse("jobs.html", {"request": request, "user": user, "lang": lang})
 
 @app.get("/calendar", response_class=HTMLResponse)
 async def read_calendar_page(
@@ -134,7 +147,8 @@ async def read_calendar_page(
 ):
     if not user:
         return RedirectResponse(url="/login")
-    return templates.TemplateResponse("calendar.html", {"request": request, "user": user})
+    lang = request.cookies.get("app_lang", "th")
+    return templates.TemplateResponse("calendar.html", {"request": request, "user": user, "lang": lang})
 
 @app.get("/performance", response_class=HTMLResponse)
 async def read_performance_page(
@@ -146,7 +160,8 @@ async def read_performance_page(
     if user.role not in ["admin", "manager"]:
         # Maybe technicians shouldn't see full business performance
         pass 
-    return templates.TemplateResponse("performance.html", {"request": request, "user": user})
+    lang = request.cookies.get("app_lang", "th")
+    return templates.TemplateResponse("performance.html", {"request": request, "user": user, "lang": lang})
 
 @app.get("/profile", response_class=HTMLResponse)
 async def read_profile_page(
@@ -155,7 +170,8 @@ async def read_profile_page(
 ):
     if not user:
         return RedirectResponse(url="/login")
-    return templates.TemplateResponse("profile.html", {"request": request, "user": user})
+    lang = request.cookies.get("app_lang", "th")
+    return templates.TemplateResponse("profile.html", {"request": request, "user": user, "lang": lang})
 
 @app.get("/teams", response_class=HTMLResponse)
 async def read_teams_page(
@@ -167,7 +183,8 @@ async def read_teams_page(
     if user.role not in ["admin", "staff"]:
         # Standard users shouldn't manage teams
          return RedirectResponse(url="/")
-    return templates.TemplateResponse("teams.html", {"request": request, "user": user})
+    lang = request.cookies.get("app_lang", "th")
+    return templates.TemplateResponse("teams.html", {"request": request, "user": user, "lang": lang})
 
 @app.get("/projects", response_class=HTMLResponse)
 async def read_projects_page(
@@ -176,7 +193,8 @@ async def read_projects_page(
 ):
     if not user:
         return RedirectResponse(url="/login")
-    return templates.TemplateResponse("projects.html", {"request": request, "user": user})
+    lang = request.cookies.get("app_lang", "th")
+    return templates.TemplateResponse("projects.html", {"request": request, "user": user, "lang": lang})
 
 @app.get("/reports", response_class=HTMLResponse)
 async def read_reports_page(
@@ -187,7 +205,8 @@ async def read_reports_page(
         return RedirectResponse(url="/login")
     if user.role not in ["admin", "staff"]:
         return RedirectResponse(url="/")
-    return templates.TemplateResponse("reports.html", {"request": request, "user": user})
+    lang = request.cookies.get("app_lang", "th")
+    return templates.TemplateResponse("reports.html", {"request": request, "user": user, "lang": lang})
 
 if __name__ == "__main__":
     import uvicorn

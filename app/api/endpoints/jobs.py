@@ -115,13 +115,13 @@ def read_jobs(
     
     # RBAC Filtering
     # Robust check for role type (Enum vs String)
-    user_role_str = str(current_user.role.value) if hasattr(current_user.role, 'value') else str(current_user.role)
+    user_role_str = str(current_user.role.value if hasattr(current_user.role, 'value') else current_user.role).lower()
     
     if user_role_str == "technician":
         query = query.join(Assignment).filter(
             or_(
                 Assignment.technician_id == current_user.id,
-                Assignment.team_id == current_user.team_id
+                Assignment.team_id == current_user.team_id if current_user.team_id else False
             )
         ).distinct()
         print(f"DEBUG: Applied Technician Filter for user {current_user.id}")
@@ -151,10 +151,6 @@ def read_jobs(
     # Apply Sort
     query = query.order_by(Job.id.desc())
     
-    # Debug count
-    # total_count = query.count()
-    # print(f"DEBUG: Found {total_count} jobs")
-    
     jobs = query.offset(skip).limit(limit).all()
     print(f"DEBUG: Returning {len(jobs)} jobs")
     return jobs
@@ -170,7 +166,9 @@ def read_job(
         raise HTTPException(status_code=404, detail="Job not found")
         
     # RBAC Check for single job view
-    if current_user.role == UserRole.TECHNICIAN:
+    user_role_str = str(current_user.role.value if hasattr(current_user.role, 'value') else current_user.role).lower()
+    
+    if user_role_str == "technician":
         # Check if assigned directly or via team
         is_assigned = any(
             a.technician_id == current_user.id or 
@@ -193,8 +191,25 @@ def update_job(
     if db_job is None:
         raise HTTPException(status_code=404, detail="Job not found")
     
-    # RBAC: Technicians can only update status (and maybe notes in future), but for now we trust the UI hiding
-    # Ideally should filter update_data here if Tech
+    # RBAC Security: Technicians can only edit their own jobs
+    user_role_str = str(current_user.role.value if hasattr(current_user.role, 'value') else current_user.role).lower()
+    
+    if user_role_str == "technician":
+         # Verify assignment
+         is_assigned = db.query(Assignment).filter(
+            Assignment.job_id == job_id,
+            or_(
+                Assignment.technician_id == current_user.id,
+                Assignment.team_id == current_user.team_id if current_user.team_id else False
+            )
+         ).first()
+         
+         if not is_assigned:
+             raise HTTPException(status_code=403, detail="You are not authorized to edit this job")
+         
+         # Prevent Techs from re-assigning
+         if job_update.technician_ids is not None:
+             raise HTTPException(status_code=403, detail="Technicians cannot change job assignments")
     
     update_data = job_update.dict(exclude_unset=True)
     
@@ -208,9 +223,8 @@ def update_job(
         
     # Handle assignments update
     if assignments_to_process is not None:
-        # RBAC: Technicians cannot re-assign logic
-        if current_user.role == UserRole.TECHNICIAN:
-             # Skip assignment processing for techs effectively
+        if user_role_str == "technician":
+             # Double check prevention (should be caught above)
              pass
         else:
             technician_ids = assignments_to_process
@@ -218,11 +232,8 @@ def update_job(
             db.query(Assignment).filter(Assignment.job_id == job_id).delete()
             
             if technician_ids:
-                # Auto-update status workflow
-                # Only if status is currently PENDING (either from DB or just updated from form as PENDING)
                 if db_job.status == JobStatus.PENDING:
                     db_job.status = JobStatus.ASSIGNED
-                    # No need to add() again, existing session references object
     
                 for tech_id in technician_ids:
                     assignment = Assignment(job_id=job_id, technician_id=tech_id)

@@ -2,11 +2,11 @@
 
 {% block content %}
 <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">Projects</h1>
+    <h1 class="text-3xl font-bold text-gray-800">{{ t('proj_header', lang) }}</h1>
     {% if user.role in ['admin', 'staff'] %}
     <button onclick="openProjectModal()"
         class="bg-primary hover:bg-sky-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
-        <i class="fas fa-plus mr-2"></i> Create Project
+        <i class="fas fa-plus mr-2"></i> {{ t('btn_create_project', lang) }}
     </button>
     {% endif %}
 </div>
@@ -20,27 +20,31 @@
     x-show="open">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="modalTitle">Create Project</h3>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="modalTitle">{{
+                t('modal_create_project', lang) }}</h3>
             <div class="mt-4">
                 <form id="projectForm">
                     <input type="hidden" id="projectId">
 
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="name">Project Name</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="name">{{ t('label_project_name',
+                            lang) }}</label>
                         <input
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="name" type="text" required>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="customerName">Customer</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="customerName">{{
+                            t('label_customer_name', lang) }}</label>
                         <input
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="customerName" type="text">
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="description">Description</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="description">{{
+                            t('label_description', lang) }}</label>
                         <textarea
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="description"></textarea>
@@ -48,13 +52,15 @@
 
                     <div class="flex gap-2 mb-4">
                         <div class="w-1/2">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="startDate">Start Date</label>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="startDate">{{
+                                t('label_start_date', lang) }}</label>
                             <input
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 id="startDate" type="date">
                         </div>
                         <div class="w-1/2">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="endDate">End Date</label>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="endDate">{{
+                                t('label_end_date', lang) }}</label>
                             <input
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 id="endDate" type="date">
@@ -62,24 +68,25 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="status">Status</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="status">{{ t('label_status',
+                            lang) }}</label>
                         <select
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="status">
-                            <option value="active">Active</option>
-                            <option value="completed">Completed</option>
-                            <option value="on_hold">On Hold</option>
+                            <option value="active">{{ t('status_active', lang) }}</option>
+                            <option value="completed">{{ t('status_completed', lang) }}</option>
+                            <option value="on_hold">{{ t('status_on_hold', lang) }}</option>
                         </select>
                     </div>
 
                     <div class="flex items-center justify-end gap-2">
                         <button type="button" onclick="closeModal()"
                             class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Cancel
+                            {{ t('btn_cancel', lang) }}
                         </button>
                         <button type="submit"
                             class="bg-primary hover:bg-sky-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Save
+                            {{ t('btn_save', lang) }}
                         </button>
                     </div>
                 </form>
@@ -98,6 +105,24 @@
         const container = document.getElementById('projectContainer');
         container.innerHTML = '';
 
+        const translations = {
+            edit: "{{ t('btn_edit', lang) }}",
+            delete: "{{ t('btn_delete', lang) }}",
+            confirm: "{{ t('confirm_delete_project', lang) }}",
+            progress: "{{ t('label_progress', lang) }}",
+            start: "{{ t('label_start', lang) }}",
+            end: "{{ t('label_end', lang) }}",
+            no_desc: "{{ t('text_no_description', lang) }}",
+            no_cust: "{{ t('text_no_customer', lang) }}",
+            modalCreate: "{{ t('modal_create_project', lang) }}",
+            modalEdit: "{{ t('modal_edit_project', lang) }}",
+            status: {
+                active: "{{ t('status_active', lang) }}",
+                completed: "{{ t('status_completed', lang) }}",
+                on_hold: "{{ t('status_on_hold', lang) }}",
+            }
+        };
+
         projects.forEach(project => {
             const card = document.createElement('div');
             card.className = "bg-white overflow-hidden shadow rounded-lg hover:shadow-xl transition-shadow duration-300";
@@ -111,10 +136,10 @@
 
             // RBAC for Buttons
             if (['admin', 'staff'].includes(currentUserRole)) {
-                actionButtons += `<button onclick='event.stopPropagation(); editProject(${JSON.stringify(project)})' class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">Edit</button>`;
+                actionButtons += `<button onclick='event.stopPropagation(); editProject(${JSON.stringify(project)})' class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">${translations.edit}</button>`;
             }
             if (currentUserRole === 'admin') {
-                actionButtons += `<button onclick="event.stopPropagation(); deleteProject(${project.id})" class="text-red-600 hover:text-red-900 text-sm font-medium ml-4">Delete</button>`;
+                actionButtons += `<button onclick="event.stopPropagation(); deleteProject(${project.id})" class="text-red-600 hover:text-red-900 text-sm font-medium ml-4">${translations.delete}</button>`;
             }
 
             card.innerHTML = `
@@ -122,15 +147,15 @@
                     <div class="flex items-center justify-between">
                          <h3 class="text-lg leading-6 font-medium text-gray-900 truncate" title="${project.name}">${project.name}</h3>
                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor} uppercase">
-                            ${project.status.replace('_', ' ')}
+                            ${translations.status[project.status] || project.status.replace('_', ' ')}
                         </span>
                     </div>
-                    <p class="mt-1 max-w-2xl text-sm text-gray-500">${project.customer_name || 'No Customer'}</p>
-                    <p class="mt-2 text-sm text-gray-600 line-clamp-2 min-h-[2.5rem]">${project.description || 'No description'}</p>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500">${project.customer_name || translations.no_cust}</p>
+                    <p class="mt-2 text-sm text-gray-600 line-clamp-2 min-h-[2.5rem]">${project.description || translations.no_desc}</p>
                     
                     <div class="mt-4">
                         <div class="flex justify-between text-sm text-gray-600 mb-1">
-                            <span>Progress</span>
+                            <span>${translations.progress}</span>
                             <span>${project.completion_percentage}% (${project.job_count} Jobs)</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2.5">
@@ -139,8 +164,8 @@
                     </div>
                     
                      <div class="mt-4 text-xs text-gray-500 flex justify-between">
-                        <span>Start: ${formatDate(project.start_date)}</span>
-                        <span>End: ${formatDate(project.end_date)}</span>
+                        <span>${translations.start}: ${formatDate(project.start_date)}</span>
+                        <span>${translations.end}: ${formatDate(project.end_date)}</span>
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-4 sm:px-6 flex justify-end gap-2 border-t border-gray-200 h-16 items-center">
@@ -164,7 +189,7 @@
     const form = document.getElementById('projectForm');
 
     function openProjectModal() {
-        document.getElementById('modalTitle').innerText = "Create Project";
+        document.getElementById('modalTitle').innerText = translations.modalCreate;
         form.reset();
         document.getElementById('projectId').value = '';
         modal.classList.remove('hidden');
@@ -175,7 +200,7 @@
     }
 
     function editProject(project) {
-        document.getElementById('modalTitle').innerText = "Edit Project";
+        document.getElementById('modalTitle').innerText = translations.modalEdit;
         document.getElementById('projectId').value = project.id;
         document.getElementById('name').value = project.name;
         document.getElementById('customerName').value = project.customer_name || '';
@@ -216,7 +241,7 @@
     });
 
     async function deleteProject(id) {
-        if (!confirm("Delete this project?")) return;
+        if (!confirm(translations.confirm)) return;
         const response = await fetch(`/ api / projects / ${id}`, { method: 'DELETE' });
         if (response.ok) loadProjects();
         else alert("Error deleting project");

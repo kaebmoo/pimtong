@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Pimtong Work Manager</title>
+    <title>{{ t('login_title', lang) }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -19,16 +19,26 @@
     </script>
 </head>
 
-<body class="bg-gray-100 h-screen flex items-center justify-center">
+<body class="bg-gray-100 h-screen flex items-center justify-center relative">
+    <!-- Language Switcher -->
+    <div class="absolute top-4 right-4 flex space-x-2">
+        <a href="/set-language/en"
+            class="text-sm font-medium {% if lang == 'en' %}text-primary font-bold{% else %}text-gray-500 hover:text-gray-900{% endif %}">EN</a>
+        <span class="text-gray-300">|</span>
+        <a href="/set-language/th"
+            class="text-sm font-medium {% if lang == 'th' %}text-primary font-bold{% else %}text-gray-500 hover:text-gray-900{% endif %}">TH</a>
+    </div>
+
     <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold text-gray-800">Pimtong WM</h1>
-            <p class="text-gray-500 mt-2">Sign in to your account</p>
+            <p class="text-gray-500 mt-2">{{ t('header_signin', lang) }}</p>
         </div>
 
         <form id="loginForm" class="space-y-6">
             <div>
-                <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                <label for="username" class="block text-sm font-medium text-gray-700">{{ t('label_username', lang)
+                    }}</label>
                 <div class="mt-1">
                     <input id="username" name="username" type="text" required
                         class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
@@ -36,7 +46,8 @@
             </div>
 
             <div>
-                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <label for="password" class="block text-sm font-medium text-gray-700">{{ t('label_password', lang)
+                    }}</label>
                 <div class="mt-1">
                     <input id="password" name="password" type="password" required
                         class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
@@ -44,13 +55,13 @@
             </div>
 
             <div id="errorMessage" class="text-red-600 text-sm hidden text-center">
-                Invalid username or password.
+                {{ t('err_login_invalid', lang) }}
             </div>
 
             <div>
                 <button type="submit"
                     class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                    Sign in
+                    {{ t('btn_signin', lang) }}
                 </button>
             </div>
         </form>
@@ -74,7 +85,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                document.getElementById('errorMessage').innerText = "An error occurred.";
+                document.getElementById('errorMessage').innerText = "{{ t('err_generic', lang) }}";
                 document.getElementById('errorMessage').classList.remove('hidden');
             }
         });

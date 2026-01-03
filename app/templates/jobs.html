@@ -3,15 +3,18 @@
 {% block header %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
 {% endblock %}
 
 {% block content %}
 <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">Work Orders</h1>
+    <h1 id="pageTitle" class="text-3xl font-bold text-gray-800">{{ t('job_header', lang) }}</h1>
     {% if user.role in ['admin', 'staff'] %}
     <button onclick="openJobModal()"
         class="bg-primary hover:bg-sky-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
-        <i class="fas fa-plus mr-2"></i> Add New Job
+        <i class="fas fa-plus mr-2"></i> {{ t('btn_add_job', lang) }}
     </button>
     {% endif %}
 </div>
@@ -20,13 +23,18 @@
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
             <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Title
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Schedule</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{
+                    t('col_status', lang) }}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{
+                    t('col_title', lang) }}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{
+                    t('col_customer', lang) }}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{
+                    t('col_schedule', lang) }}</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{
+                    t('col_type', lang) }}</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{
+                    t('col_actions', lang) }}</th>
             </tr>
         </thead>
         <tbody id="jobTableBody" class="bg-white divide-y divide-gray-200">
@@ -45,22 +53,25 @@
                     <input type="hidden" id="jobId">
 
                     <div class="col-span-2">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="title">Title</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="title">{{ t('label_title', lang)
+                            }}</label>
                         <input
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="title" type="text" required>
                     </div>
 
                     <div class="col-span-2">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="description">Description</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="description">{{
+                            t('label_description', lang) }}</label>
                         <textarea
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="description"></textarea>
                     </div>
 
                     <div class="col-span-2">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="projectId">Project
-                            (Optional)</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="projectId">{{ t('label_project',
+                            lang) }}
+                            {{ t('label_optional', lang) }}</label>
                         <select
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="projectId">
@@ -70,7 +81,8 @@
                     </div>
 
                     <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="jobType">Type</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="jobType">{{ t('label_type', lang)
+                            }}</label>
                         <select
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="jobType">
@@ -81,7 +93,8 @@
                     </div>
 
                     <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="status">Status</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="status">{{ t('label_status',
+                            lang) }}</label>
                         <select
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="status">
@@ -94,23 +107,24 @@
                     </div>
 
                     <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="customerName">Customer
-                            Name</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="customerName">{{
+                            t('label_customer_name', lang) }}</label>
                         <input
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="customerName" type="text" required>
                     </div>
 
                     <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="customerPhone">Phone</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="customerPhone">{{
+                            t('label_phone', lang) }}</label>
                         <input
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="customerPhone" type="text" required>
                     </div>
 
                     <div class="col-span-2">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="technicianIds">Assign
-                            Technicians</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="technicianIds">{{
+                            t('label_assign', lang) }}</label>
                         <input type="text" id="techSearch" placeholder="Search technicians..."
                             class="mb-2 shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm">
                         <select multiple
@@ -122,7 +136,8 @@
                     </div>
 
                     <div class="col-span-2">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Location (Click on map to pin)</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">{{ t('label_location', lang)
+                            }}</label>
                         <div id="map" class="h-64 w-full rounded border shadow-sm z-0"></div>
                         <input type="hidden" id="locationLat">
                         <input type="hidden" id="locationLong">
@@ -133,22 +148,25 @@
                     </div>
 
                     <div class="col-span-2">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="customerAddress">Address</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="customerAddress">{{
+                            t('label_address', lang) }}</label>
                         <input
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="customerAddress" type="text" required>
                     </div>
 
                     <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="scheduledDate">Date</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="scheduledDate">{{ t('label_date',
+                            lang) }}</label>
                         <input
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="scheduledDate" type="date" required>
                     </div>
 
                     <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="scheduledTime">Time
-                            (Optional)</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="scheduledTime">{{ t('label_time',
+                            lang) }}
+                            {{ t('label_optional', lang) }}</label>
                         <input
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="scheduledTime" type="time">
@@ -157,11 +175,11 @@
                     <div class="col-span-2 flex items-center justify-end mt-4 gap-2">
                         <button type="button" onclick="closeJobModal()"
                             class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Cancel
+                            {{ t('btn_cancel', lang) }}
                         </button>
                         <button type="submit"
                             class="bg-primary hover:bg-sky-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Save
+                            {{ t('btn_save', lang) }}
                         </button>
                     </div>
                 </form>
@@ -173,9 +191,44 @@
 <script>
     let map;
     let marker;
-    const currentUserRole = "{{ user.role }}";
+    let datePicker;
+    const currentUserRole = "{{ user.role }}".toLowerCase();
+    const currentUserId = {{ user.id }};
+
+    // Translation object for JS
+    const translations = {
+        unassigned: "{{ t('label_unassigned', lang) }}",
+        unknown: "{{ t('label_unassigned', lang) }}",
+        edit: "{{ t('btn_edit', lang) }}",
+        delete: "{{ t('btn_delete', lang) }}",
+        nav: "Nav",
+        status: {
+            pending: "{{ t('status_pending', lang) }}",
+            assigned: "{{ t('status_assigned', lang) }}",
+            in_progress: "{{ t('status_in_progress', lang) }}",
+            completed: "{{ t('status_completed', lang) }}",
+            cancelled: "{{ t('status_cancelled', lang) }}",
+            on_hold: "{{ t('status_on_hold', lang) }}",
+        },
+        modalNew: "{{ t('modal_new_job', lang) }}",
+        modalEdit: "{{ t('modal_edit_job', lang) }}",
+        confirm: "{{ t('confirm_delete_job', lang) }}",
+        errDelete: "{{ t('err_delete_job', lang) }}",
+        errApp: "{{ t('err_app_error', lang) }}",
+        err: "{{ t('err_error', lang) }}"
+    };
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Init Flatpickr
+        const currentLang = "{{ lang }}";
+        datePicker = flatpickr("#scheduledDate", {
+            altInput: true,
+            altFormat: "d/m/Y",
+            dateFormat: "Y-m-d",
+            locale: currentLang === 'th' ? "th" : "default",
+            defaultDate: new Date()
+        });
+
         loadJobs();
         loadTechnicians();
         loadProjects();
@@ -280,8 +333,17 @@
             tbody.innerHTML = '';
 
             // Update Title if filtering
-            if (projectId && jobs.length > 0) {
-                // Optional: Update UI to show filter active
+            if (projectId) {
+                try {
+                    const projResp = await fetch(`/api/projects/${projectId}`);
+                    if (projResp.ok) {
+                        const project = await projResp.json();
+                        const titleEl = document.getElementById('pageTitle');
+                        if (titleEl) {
+                            titleEl.innerHTML = `Work Orders <span class="text-gray-500 text-xl font-normal">/ ${project.name}</span>`;
+                        }
+                    }
+                } catch (e) { console.error("Failed to load project info", e); }
             }
 
             jobs.forEach((job, index) => {
@@ -300,14 +362,19 @@
 
                 // Navigate Button (if lat/long exists)
                 // Usng editJob(index) to avoid JSON stringify issues
-                let actionButtons = `
-                    <button onclick='editJob(${index})' class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>
-                `;
+                let actionButtons = '';
+
+                // Check if user is assigned
+                const isAssigned = job.assignments && job.assignments.some(a => a.technician && a.technician.id === currentUserId);
+                const canEdit = (currentUserRole === 'admin' || currentUserRole === 'staff' || isAssigned);
+
+                if (canEdit) {
+                    actionButtons += `<button onclick='editJob(${index})' class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>`;
+                }
 
                 if (currentUserRole === 'admin') {
                     actionButtons += `<button onclick="deleteJob(${job.id})" class="text-red-600 hover:text-red-900">Delete</button>`;
                 }
-
                 if (job.location_lat && job.location_long) {
                     const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${job.location_lat},${job.location_long}`;
                     // Nav button prepended
@@ -347,7 +414,7 @@
         } catch (error) {
             console.error("Load Jobs Error:", error);
             // Alert user so they report it
-            alert("Application Error: " + error.message);
+            alert(translations.errApp + ": " + error.message);
         }
     }
 
@@ -413,12 +480,13 @@
     }
 
     function openJobModal() {
-        document.getElementById('modalTitle').innerText = "New Job";
+        document.getElementById('modalTitle').innerText = translations.modalNew;
         form.reset();
         document.getElementById('jobId').value = '';
         document.getElementById('projectId').value = '';
+        document.getElementById('projectId').value = '';
         // Set default date to today
-        document.getElementById('scheduledDate').valueAsDate = new Date();
+        if (datePicker) datePicker.setDate(new Date());
 
         // Reset select
         const select = document.getElementById('technicianIds');
@@ -440,7 +508,7 @@
         const job = currentJobs[index];
         if (!job) return;
 
-        document.getElementById('modalTitle').innerText = "Edit Job";
+        document.getElementById('modalTitle').innerText = translations.modalEdit;
         document.getElementById('jobId').value = job.id;
         document.getElementById('title').value = job.title;
         document.getElementById('description').value = job.description || '';
@@ -449,7 +517,7 @@
         document.getElementById('customerName').value = job.customer_name;
         document.getElementById('customerPhone').value = job.customer_phone;
         document.getElementById('customerAddress').value = job.customer_address;
-        document.getElementById('scheduledDate').value = job.scheduled_date;
+        if (datePicker) datePicker.setDate(job.scheduled_date);
         document.getElementById('scheduledTime').value = job.scheduled_time || '';
         document.getElementById('projectId').value = job.project_id || '';
 
@@ -572,17 +640,17 @@
             loadJobs();
         } else {
             const err = await response.json();
-            alert("Error: " + err.detail);
+            alert(translations.err + ": " + err.detail);
         }
     });
 
     async function deleteJob(jobId) {
-        if (!confirm('Delete this job?')) return;
+        if (!confirm(translations.confirm)) return;
         const response = await fetch(`/api/jobs/${jobId}`, { method: 'DELETE' });
         if (response.ok) {
             loadJobs();
         } else {
-            alert("Error deleting job");
+            alert(translations.errDelete);
         }
     }
 </script>

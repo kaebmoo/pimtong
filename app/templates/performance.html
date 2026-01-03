@@ -6,27 +6,27 @@
 
 {% block content %}
 <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">Performance Analytics</h1>
-    <div class="text-sm text-gray-500">Overview for current month</div>
+    <h1 class="text-3xl font-bold text-gray-800">{{ t('perf_header', lang) }}</h1>
+    <div class="text-sm text-gray-500">{{ t('perf_subheader', lang) }}</div>
 </div>
 
 <!-- KPI Cards -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
     <div class="bg-white rounded-lg shadow p-6 border-b-4 border-blue-500">
-        <div class="text-gray-500 text-sm uppercase tracking-wider font-semibold">Total Jobs</div>
+        <div class="text-gray-500 text-sm uppercase tracking-wider font-semibold">{{ t('rep_total_jobs', lang) }}</div>
         <div class="text-3xl font-bold text-gray-800 mt-2" id="kpi-total">-</div>
     </div>
     <div class="bg-white rounded-lg shadow p-6 border-b-4 border-green-500">
-        <div class="text-gray-500 text-sm uppercase tracking-wider font-semibold">Completed</div>
+        <div class="text-gray-500 text-sm uppercase tracking-wider font-semibold">{{ t('rep_completed', lang) }}</div>
         <div class="text-3xl font-bold text-gray-800 mt-2" id="kpi-completed">-</div>
-        <div class="text-xs text-green-600 mt-1" id="kpi-rate">0% Rate</div>
+        <div class="text-xs text-green-600 mt-1" id="kpi-rate">0% {{ t('rep_completion_rate', lang) }}</div>
     </div>
     <div class="bg-white rounded-lg shadow p-6 border-b-4 border-yellow-500">
-        <div class="text-gray-500 text-sm uppercase tracking-wider font-semibold">Pending/Active</div>
+        <div class="text-gray-500 text-sm uppercase tracking-wider font-semibold">{{ t('kpi_active', lang) }}</div>
         <div class="text-3xl font-bold text-gray-800 mt-2" id="kpi-active">-</div>
     </div>
     <div class="bg-white rounded-lg shadow p-6 border-b-4 border-purple-500">
-        <div class="text-gray-500 text-sm uppercase tracking-wider font-semibold">Technicians</div>
+        <div class="text-gray-500 text-sm uppercase tracking-wider font-semibold">{{ t('kpi_techs', lang) }}</div>
         <div class="text-3xl font-bold text-gray-800 mt-2" id="kpi-techs">-</div>
     </div>
 </div>
@@ -35,7 +35,7 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
     <!-- Status Distribution -->
     <div class="bg-white shadow rounded-lg p-6">
-        <h3 class="text-lg font-bold text-gray-800 mb-4">Job Status Distribution</h3>
+        <h3 class="text-lg font-bold text-gray-800 mb-4">{{ t('chart_status_dist', lang) }}</h3>
         <div class="relative h-64">
             <canvas id="statusChart"></canvas>
         </div>
@@ -43,7 +43,7 @@
 
     <!-- Job Type Distribution -->
     <div class="bg-white shadow rounded-lg p-6">
-        <h3 class="text-lg font-bold text-gray-800 mb-4">Job Types</h3>
+        <h3 class="text-lg font-bold text-gray-800 mb-4">{{ t('chart_job_types', lang) }}</h3>
         <div class="relative h-64">
             <canvas id="typeChart"></canvas>
         </div>
@@ -54,7 +54,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
     <!-- Workload Trend -->
     <div class="bg-white shadow rounded-lg p-6 lg:col-span-2">
-        <h3 class="text-lg font-bold text-gray-800 mb-4">Daily Workload (Last 7 Days)</h3>
+        <h3 class="text-lg font-bold text-gray-800 mb-4">{{ t('chart_daily_workload', lang) }}</h3>
         <div class="relative h-64">
             <canvas id="trendChart"></canvas>
         </div>
@@ -62,13 +62,13 @@
 
     <!-- Top Technicians -->
     <div class="bg-white shadow rounded-lg p-6">
-        <h3 class="text-lg font-bold text-gray-800 mb-4">Technician Workload</h3>
+        <h3 class="text-lg font-bold text-gray-800 mb-4">{{ t('chart_tech_workload', lang) }}</h3>
         <div class="overflow-y-auto h-64">
             <table class="min-w-full text-sm">
                 <thead>
                     <tr class="text-left text-gray-500 border-b">
-                        <th class="pb-2">Name</th>
-                        <th class="pb-2 text-right">Jobs</th>
+                        <th class="pb-2">{{ t('col_name', lang) }}</th>
+                        <th class="pb-2 text-right">{{ t('rep_total_jobs', lang) }}</th>
                     </tr>
                 </thead>
                 <tbody id="techTableBody" class="text-gray-700">
@@ -115,10 +115,20 @@
         };
         jobs.forEach(j => { if (statusCounts[j.status] !== undefined) statusCounts[j.status]++ });
 
+        const translations = {
+            status: {
+                pending: "{{ t('status_pending', lang) }}",
+                assigned: "{{ t('status_assigned', lang) }}",
+                in_progress: "{{ t('status_in_progress', lang) }}",
+                completed: "{{ t('status_completed', lang) }}",
+                cancelled: "{{ t('status_cancelled', lang) }}",
+            }
+        };
+
         new Chart(document.getElementById('statusChart'), {
             type: 'doughnut',
             data: {
-                labels: ['Pending', 'Assigned', 'In Progress', 'Completed', 'Cancelled'],
+                labels: [translations.status.pending, translations.status.assigned, translations.status.in_progress, translations.status.completed, translations.status.cancelled],
                 datasets: [{
                     data: Object.values(statusCounts),
                     backgroundColor: ['#ef4444', '#3b82f6', '#eab308', '#22c55e', '#9ca3af']
@@ -162,7 +172,7 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Jobs Scheduled',
+                    label: "{{ t('rep_total_jobs', lang) }}",
                     data: data,
                     backgroundColor: '#0ea5e9',
                     borderRadius: 4
