@@ -49,6 +49,45 @@ async def seed_db():
     except Exception as e:
         return {"error": str(e), "status": "failed"}
 
+@app.get("/setup/migrate")
+async def migrate_db():
+    """Manual trigger to migrate database for Vercel (Add Cols/Tables)"""
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            # 1. Create JobHistory table (Postgres/SQLite compatible-ish)
+            # Note: For SQLite 'SERIAL' might fail, using AUTOINCREMENT or just INTEGER PRIMARY KEY is better for universal
+            # But Vercel usually uses Postgres.
+            # We will use safer SQL for both if possible or try/catch.
+            
+            # Create Table
+            conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS job_history (
+                id SERIAL PRIMARY KEY,
+                job_id INTEGER,
+                user_id INTEGER,
+                old_status VARCHAR,
+                new_status VARCHAR,
+                note TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(job_id) REFERENCES jobs(id),
+                FOREIGN KEY(user_id) REFERENCES users(id)
+            );
+            """))
+
+            # 2. Add Columns
+            columns = ["product_type", "model", "serial_number"]
+            for col in columns:
+                try:
+                    conn.execute(text(f"ALTER TABLE jobs ADD COLUMN {col} VARCHAR;"))
+                except Exception as e:
+                    print(f"Column {col} might already exist: {e}")
+            
+            conn.commit()
+            return {"message": "Migration V2 applied successfully", "status": "success"}
+    except Exception as e:
+        return {"error": str(e), "status": "failed"}
+
 @app.on_event("startup")
 def startup_event():
     # Create tables
