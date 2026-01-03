@@ -244,95 +244,111 @@
         });
     }
 
+    let currentJobs = [];
+
     async function loadJobs() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const projectId = urlParams.get('project_id');
-        const search = urlParams.get('search');
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get('project_id');
+            const search = urlParams.get('search');
 
-        let url = '/api/jobs/';
-        let params = [];
+            let url = '/api/jobs/';
+            let params = [];
 
-        if (projectId) params.push(`project_id=${projectId}`);
-        if (search) params.push(`search=${search}`);
+            if (projectId) params.push(`project_id=${projectId}`);
+            if (search) params.push(`search=${search}`);
 
-        if (params.length > 0) {
-            url += '?' + params.join('&');
-        }
+            // Anti-cache
+            params.push(`t=${Date.now()}`);
 
-        // Sync search bar if present
-        const searchInput = document.getElementById('globalSearch');
-        if (searchInput && search) searchInput.value = search;
-
-        const response = await fetch(url);
-        const jobs = await response.json();
-        const tbody = document.getElementById('jobTableBody');
-        tbody.innerHTML = '';
-
-        // Update Title if filtering
-        if (projectId && jobs.length > 0) {
-            // Optional: Update UI to show filter active
-        }
-
-        jobs.forEach(job => {
-            const tr = document.createElement('tr');
-            const statusClass = statusColors[job.status] || 'bg-gray-100 text-gray-800';
-
-            // Format assignments
-            let assignedTo = '<span class="text-gray-400 italic">Unassigned</span>';
-            if (job.assignments && job.assignments.length > 0) {
-                assignedTo = job.assignments.map(a =>
-                    `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 mr-1 mb-1">
-                        ${a.technician ? a.technician.full_name : 'Unknown User'}
-                     </span>`
-                ).join('');
+            if (params.length > 0) {
+                url += '?' + params.join('&');
             }
 
-            // Navigate Button (if lat/long exists)
-            let actionButtons = `
-                <button onclick='editJob(${JSON.stringify(job).replace(/'/g, "&#39;")})' class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>
-            `;
+            // Sync search bar if present
+            const searchInput = document.getElementById('globalSearch');
+            if (searchInput && search) searchInput.value = search;
 
-            if (currentUserRole === 'admin') {
-                actionButtons += `<button onclick="deleteJob(${job.id})" class="text-red-600 hover:text-red-900">Delete</button>`;
-            } else {
-                // Staff and Techs cannot delete
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status}`);
+            }
+            const jobs = await response.json();
+            currentJobs = jobs; // Store globally
+
+            const tbody = document.getElementById('jobTableBody');
+            tbody.innerHTML = '';
+
+            // Update Title if filtering
+            if (projectId && jobs.length > 0) {
+                // Optional: Update UI to show filter active
             }
 
-            if (job.location_lat && job.location_long) {
-                const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${job.location_lat},${job.location_long}`;
-                actionButtons = `
-                    <a href="${navUrl}" target="_blank" class="text-green-600 hover:text-green-900 mr-2 text-xs border border-green-200 bg-green-50 rounded px-1 py-0.5"><i class="fas fa-map-marked-alt"></i> Nav</a>
-                    ${actionButtons}
+            jobs.forEach((job, index) => {
+                const tr = document.createElement('tr');
+                const statusClass = statusColors[job.status] || 'bg-gray-100 text-gray-800';
+
+                // Format assignments
+                let assignedTo = '<span class="text-gray-400 italic">Unassigned</span>';
+                if (job.assignments && job.assignments.length > 0) {
+                    assignedTo = job.assignments.map(a =>
+                        `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 mr-1 mb-1">
+                            ${a.technician ? a.technician.full_name : 'Unknown User'}
+                         </span>`
+                    ).join('');
+                }
+
+                // Navigate Button (if lat/long exists)
+                // Usng editJob(index) to avoid JSON stringify issues
+                let actionButtons = `
+                    <button onclick='editJob(${index})' class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>
                 `;
-            }
 
-            tr.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full uppercase ${statusClass}">
-                        ${job.status.replace('_', ' ')}
-                    </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">${job.title}</div>
-                    <div class="text-xs mt-1">${assignedTo}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">${job.customer_name}</div>
-                    <div class="text-xs text-gray-500">${job.customer_phone}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div>${formatDate(job.scheduled_date)}</div>
-                    <div class="text-xs">${job.scheduled_time || ''}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
-                    ${job.job_type}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    ${actionButtons}
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
+                if (currentUserRole === 'admin') {
+                    actionButtons += `<button onclick="deleteJob(${job.id})" class="text-red-600 hover:text-red-900">Delete</button>`;
+                }
+
+                if (job.location_lat && job.location_long) {
+                    const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${job.location_lat},${job.location_long}`;
+                    // Nav button prepended
+                    actionButtons = `
+                        <a href="${navUrl}" target="_blank" class="text-green-600 hover:text-green-900 mr-2 text-xs border border-green-200 bg-green-50 rounded px-1 py-0.5"><i class="fas fa-map-marked-alt"></i> Nav</a>
+                        ${actionButtons}
+                    `;
+                }
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full uppercase ${statusClass}">
+                            ${job.status.replace('_', ' ')}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${job.title}</div>
+                        <div class="text-xs mt-1">${assignedTo}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${job.customer_name}</div>
+                        <div class="text-xs text-gray-500">${job.customer_phone}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div>${formatDate(job.scheduled_date)}</div>
+                        <div class="text-xs">${job.scheduled_time || ''}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
+                        ${job.job_type}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        ${actionButtons}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (error) {
+            console.error("Load Jobs Error:", error);
+            // Alert user so they report it
+            alert("Application Error: " + error.message);
+        }
     }
 
     const modal = document.getElementById('jobModal');
@@ -420,7 +436,10 @@
         modal.classList.add('hidden');
     }
 
-    function editJob(job) {
+    function editJob(index) {
+        const job = currentJobs[index];
+        if (!job) return;
+
         document.getElementById('modalTitle').innerText = "Edit Job";
         document.getElementById('jobId').value = job.id;
         document.getElementById('title').value = job.title;
@@ -442,7 +461,10 @@
 
         // Assignments
         const select = document.getElementById('technicianIds');
-        const assignedIds = job.assignments ? job.assignments.map(a => a.technician.id) : [];
+        const assignedIds = job.assignments ? job.assignments
+            .map(a => a.technician ? a.technician.id : null)
+            .filter(id => id !== null) : [];
+
         for (let i = 0; i < select.options.length; i++) {
             select.options[i].selected = assignedIds.includes(parseInt(select.options[i].value));
         }
