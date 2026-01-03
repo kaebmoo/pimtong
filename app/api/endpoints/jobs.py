@@ -56,7 +56,7 @@ class JobOut(JobBase):
         from_attributes = True
 
 class AssignmentOut(BaseModel):
-    technician: TechnicianOut
+    technician: Optional[TechnicianOut] = None
     class Config:
         from_attributes = True
         
@@ -108,16 +108,23 @@ def read_jobs(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # DEBUG LOGS
+    print(f"DEBUG: Read Jobs - User: {current_user.username}, Role: {current_user.role}, Search: {search}, Project: {project_id}")
+
     query = db.query(Job)
     
     # RBAC Filtering
-    if current_user.role == UserRole.TECHNICIAN:
+    # Robust check for role type (Enum vs String)
+    user_role_str = str(current_user.role.value) if hasattr(current_user.role, 'value') else str(current_user.role)
+    
+    if user_role_str == "technician":
         query = query.join(Assignment).filter(
             or_(
                 Assignment.technician_id == current_user.id,
                 Assignment.team_id == current_user.team_id
             )
         ).distinct()
+        print(f"DEBUG: Applied Technician Filter for user {current_user.id}")
         
     if project_id:
         query = query.filter(Job.project_id == project_id)
@@ -141,7 +148,15 @@ def read_jobs(
             
         query = query.filter(or_(*filters))
         
-    jobs = query.order_by(Job.id.desc()).offset(skip).limit(limit).all()
+    # Apply Sort
+    query = query.order_by(Job.id.desc())
+    
+    # Debug count
+    # total_count = query.count()
+    # print(f"DEBUG: Found {total_count} jobs")
+    
+    jobs = query.offset(skip).limit(limit).all()
+    print(f"DEBUG: Returning {len(jobs)} jobs")
     return jobs
 
 @router.get("/{job_id}", response_model=JobOut)

@@ -119,7 +119,7 @@
 
             let assignedTo = '<span class="text-gray-400 italic">Unassigned</span>';
             if (job.assignments && job.assignments.length > 0) {
-                assignedTo = job.assignments.map(a => a.technician.full_name).join(', ');
+                assignedTo = job.assignments.map(a => a.technician ? a.technician.full_name : 'Unknown User').join(', ');
             }
 
             tr.innerHTML = `
