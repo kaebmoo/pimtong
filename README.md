@@ -1,66 +1,101 @@
 # Pimtong Work Manager
 
-A web application to manage Sales, Projects, and Services for Pimtong.
-Features:
-- **Work Orders**: Manage jobs (Sales, Project, Service).
-- **Dashboard**: Visualize schedules and current status.
-- **Telegram Bot**: Technicians can check tasks via `/today`.
-- **AI Integration**: Quick add jobs using natural language.
+A comprehensive web application designed to streamline Sales, Projects, and Service operations for **Pimtong**.
 
-## Setup
+## 🚀 Key Features
+
+### 🛠 Work Order Management
+- **Job Types**: Manage Sales, Projects, and Service jobs.
+- **Status Workflow**: Track jobs from Pending -> Assigned -> In Progress -> Completed.
+- **Detailed Logs**: Automatic history tracking (Who changed what, when).
+- **Product Info**: Record Product Type, Model, and Serial Number for every job.
+- **Printable Job Sheets**: Generate professional A4 job sheets with one click.
+
+### 📊 Dashboard & Analytics
+- **Overview**: Real-time stats on job statuses and technician availability.
+- **Reports**: Exportable reports (Excel/CSV) and visual charts for performance analysis.
+- **Calendar**: Drag-and-drop calendar view for scheduling.
+
+### 👥 Team & Project Management
+- **Teams**: Group technicians into teams for easier assignment.
+- **Projects**: Group multiple jobs under a single Project entity.
+- **Technician Filters**: Filter jobs by specific technicians or teams.
+
+### 🤖 Smart Integrations
+- **AI-Powered**: Quick-add jobs using natural language commands.
+- **Telegram Bot**: Technicians can check their daily schedule via `/today`.
+
+## 🛠 Tech Stack
+
+- **Backend**: Python (FastAPI)
+- **Frontend**: Server-Side Rendering (Jinja2) + Tailwind CSS + Alpine.js
+- **Database**: PostgreSQL (Production) / SQLite (Dev)
+- **Maps**: Leaflet.js + OpenStreetMap
+
+## 📦 Setup & Installation
 
 ### Prerequisites
 - Python 3.9+
-- Docker (for PostgreSQL)
+- Docker (optional, for local Postgres)
 
-### Installation
+### Local Development
 
-1. **Start Database**:
-   Make sure Docker is running, then start the database container:
+1. **Clone & Install**
    ```bash
-   docker-compose up -d
-   ```
-
-2. **Create and Activate Virtual Environment**:
-   ```bash
-   # Create virtual environment
+   git clone https://github.com/pimtong/pimtong.git
+   cd pimtong
    python -m venv venv
-
-   # Activate on macOS/Linux
-   source venv/bin/activate
-
-   # Activate on Windows
-   venv\Scripts\activate
-   ```
-
-3. **Install Dependencies**:
-   ```bash
+   source venv/bin/activate  # Windows: venv\Scripts\activate
    pip install -r requirements.txt
    ```
 
-4. **Configuration**:
-   - Rename `.env.example` to `.env` (or create one) and set your keys:
-     - `DATABASE_URL`
-     - `TELEGRAM_BOT_TOKEN`
-     - `GOOGLE_API_KEY`
+2. **Configuration**
+   Rename `.env.example` to `.env` and configure your Database URL and API Keys.
 
-### Running the App
+3. **Run Application**
+   ```bash
+   uvicorn app.main:app --reload --port 9000
+   ```
+   Visit: http://127.0.0.1:9000
 
-```bash
-uvicorn app.main:app --reload --port 9000
-```
+## ☁️ Deployment (Vercel)
 
-Access the dashboard at: http://127.0.0.1:9000
+This project is configured for deployment on Vercel.
 
-## API Documentation
+### Database Migration on Vercel
+Vercel does not automatically run migration scripts. After every deployment that involves database schema changes:
 
-- Swagger UI: http://127.0.0.1:9000/docs
-- ReDoc: http://127.0.0.1:9000/redoc
+1. Deploy your code.
+2. Visit this URL **once** to apply database migrations:
+   ```
+   https://<your-app-url>.vercel.app/setup/migrate
+   ```
+3. You should see `"Migration V2 applied successfully"`.
 
-## Project Structure
+### 🤖 Telegram Bot (Webhook Setup)
 
-- `app/main.py`: Entry point.
-- `app/api`: API endpoints.
-- `app/core`: Configuration, Database, Auth, AI, Telegram.
-- `app/models`: SQLAlchemy models.
-- `app/templates`: HTML templates (Jinja2 + Tailwind).
+Since Vercel is serverless, the bot cannot run in "Polling Mode" (run_bot.py). You must set up a **Webhook**.
+
+1. **Deploy to Vercel**: Ensure your app is live (e.g., `https://pimtong-app.vercel.app`).
+2. **Set Webhook**: Open your browser or terminal and run this command:
+   ```bash
+   # Replace <YOUR_TOKEN> and <VERCEL_URL>
+   curl "https://api.telegram.org/bot<YOUR_TOKEN>/setWebhook?url=https://<VERCEL_URL>/api/webhook/telegram"
+   ```
+   *Expected Result*: `{"ok":true, "result":true, "description":"Webhook was set"}`
+
+3. **Verify**:
+   - Send `/start` to your bot. It should respond immediately.
+   - Run `python run_bot.py` locally to auto-switch back to Local Mode (Polling) for testing.
+
+## 📁 Project Structure
+
+- `app/main.py`: Application entry point.
+- `app/api`: REST API endpoints (`jobs.py`, `users.py`, etc.).
+- `app/core`: Core logic (Config, DB, Auth, AI).
+- `app/models`: SQLAlchemy Database Models.
+- `app/templates`: HTML Templates (Jinja2).
+- `app/static`: Static assets (CSS, JS).
+
+---
+**Pimtong WM** - Internal Tool

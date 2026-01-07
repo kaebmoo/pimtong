@@ -56,14 +56,14 @@
                                 t('label_start_date', lang) }}</label>
                             <input
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                id="startDate" type="date">
+                                id="startDate" type="text" placeholder="DD/MM/YYYY">
                         </div>
                         <div class="w-1/2">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="endDate">{{
                                 t('label_end_date', lang) }}</label>
                             <input
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                id="endDate" type="date">
+                                id="endDate" type="text" placeholder="DD/MM/YYYY">
                         </div>
                     </div>
 
@@ -97,31 +97,52 @@
 
 <script>
     const currentUserRole = "{{ user.role }}";
-    document.addEventListener('DOMContentLoaded', loadProjects);
+
+    // Global Translations
+    const translations = {
+        edit: "{{ t('btn_edit', lang) }}",
+        delete: "{{ t('btn_delete', lang) }}",
+        confirm: "{{ t('confirm_delete_project', lang) }}",
+        progress: "{{ t('label_progress', lang) }}",
+        start: "{{ t('label_start', lang) }}",
+        end: "{{ t('label_end', lang) }}",
+        no_desc: "{{ t('text_no_description', lang) }}",
+        no_cust: "{{ t('text_no_customer', lang) }}",
+        modalCreate: "{{ t('modal_create_project', lang) }}",
+        modalEdit: "{{ t('modal_edit_project', lang) }}",
+        status: {
+            active: "{{ t('status_active', lang) }}",
+            completed: "{{ t('status_completed', lang) }}",
+            on_hold: "{{ t('status_on_hold', lang) }}",
+        }
+    };
+
+    let fpStart, fpEnd;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadProjects();
+
+        // Initialize Flatpickr
+        fpStart = flatpickr("#startDate", {
+            dateFormat: "Y-m-d", // Value format
+            altInput: true,
+            altFormat: "d/m/Y", // Display format
+            allowInput: true
+        });
+
+        fpEnd = flatpickr("#endDate", {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d/m/Y",
+            allowInput: true
+        });
+    });
 
     async function loadProjects() {
         const response = await fetch('/api/projects/');
         const projects = await response.json();
         const container = document.getElementById('projectContainer');
         container.innerHTML = '';
-
-        const translations = {
-            edit: "{{ t('btn_edit', lang) }}",
-            delete: "{{ t('btn_delete', lang) }}",
-            confirm: "{{ t('confirm_delete_project', lang) }}",
-            progress: "{{ t('label_progress', lang) }}",
-            start: "{{ t('label_start', lang) }}",
-            end: "{{ t('label_end', lang) }}",
-            no_desc: "{{ t('text_no_description', lang) }}",
-            no_cust: "{{ t('text_no_customer', lang) }}",
-            modalCreate: "{{ t('modal_create_project', lang) }}",
-            modalEdit: "{{ t('modal_edit_project', lang) }}",
-            status: {
-                active: "{{ t('status_active', lang) }}",
-                completed: "{{ t('status_completed', lang) }}",
-                on_hold: "{{ t('status_on_hold', lang) }}",
-            }
-        };
 
         projects.forEach(project => {
             const card = document.createElement('div');
@@ -143,35 +164,35 @@
             }
 
             card.innerHTML = `
-                <div class="px-4 py-5 sm:p-6 cursor-pointer" onclick="window.location.href='/jobs?project_id=${project.id}'">
-                    <div class="flex items-center justify-between">
-                         <h3 class="text-lg leading-6 font-medium text-gray-900 truncate" title="${project.name}">${project.name}</h3>
-                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor} uppercase">
-                            ${translations.status[project.status] || project.status.replace('_', ' ')}
-                        </span>
-                    </div>
-                    <p class="mt-1 max-w-2xl text-sm text-gray-500">${project.customer_name || translations.no_cust}</p>
-                    <p class="mt-2 text-sm text-gray-600 line-clamp-2 min-h-[2.5rem]">${project.description || translations.no_desc}</p>
-                    
-                    <div class="mt-4">
-                        <div class="flex justify-between text-sm text-gray-600 mb-1">
-                            <span>${translations.progress}</span>
-                            <span>${project.completion_percentage}% (${project.job_count} Jobs)</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-primary h-2.5 rounded-full" style="width: ${project.completion_percentage}%"></div>
-                        </div>
-                    </div>
-                    
-                     <div class="mt-4 text-xs text-gray-500 flex justify-between">
-                        <span>${translations.start}: ${formatDate(project.start_date)}</span>
-                        <span>${translations.end}: ${formatDate(project.end_date)}</span>
-                    </div>
-                </div>
-                <div class="bg-gray-50 px-4 py-4 sm:px-6 flex justify-end gap-2 border-t border-gray-200 h-16 items-center">
-                     ${actionButtons}
-                </div>
-            `;
+<div class="px-4 py-5 sm:p-6 cursor-pointer" onclick="window.location.href='/jobs?project_id=${project.id}'">
+    <div class="flex items-center justify-between">
+        <h3 class="text-lg leading-6 font-medium text-gray-900 truncate" title="${project.name}">${project.name}</h3>
+        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor} uppercase">
+            ${translations.status[project.status] || project.status.replace('_', ' ')}
+        </span>
+    </div>
+    <p class="mt-1 max-w-2xl text-sm text-gray-500">${project.customer_name || translations.no_cust}</p>
+    <p class="mt-2 text-sm text-gray-600 line-clamp-2 min-h-[2.5rem]">${project.description || translations.no_desc}</p>
+
+    <div class="mt-4">
+        <div class="flex justify-between text-sm text-gray-600 mb-1">
+            <span>${translations.progress}</span>
+            <span>${project.completion_percentage}% (${project.job_count} Jobs)</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2.5">
+            <div class="bg-primary h-2.5 rounded-full" style="width: ${project.completion_percentage}%"></div>
+        </div>
+    </div>
+
+    <div class="mt-4 text-xs text-gray-500 flex justify-between">
+        <span>${translations.start}: ${formatDate(project.start_date)}</span>
+        <span>${translations.end}: ${formatDate(project.end_date)}</span>
+    </div>
+</div>
+<div class="bg-gray-50 px-4 py-4 sm:px-6 flex justify-end gap-2 border-t border-gray-200 h-16 items-center">
+    ${actionButtons}
+</div>
+`;
             container.appendChild(card);
         });
     }
@@ -182,7 +203,7 @@
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
-        return `${day} /${month}/${year} `;
+        return `${day}/${month}/${year}`;
     }
 
     const modal = document.getElementById('projectModal');
@@ -192,6 +213,8 @@
         document.getElementById('modalTitle').innerText = translations.modalCreate;
         form.reset();
         document.getElementById('projectId').value = '';
+        fpStart.clear();
+        fpEnd.clear();
         modal.classList.remove('hidden');
     }
 
@@ -205,9 +228,12 @@
         document.getElementById('name').value = project.name;
         document.getElementById('customerName').value = project.customer_name || '';
         document.getElementById('description').value = project.description || '';
-        document.getElementById('startDate').value = project.start_date || '';
-        document.getElementById('endDate').value = project.end_date || '';
         document.getElementById('status').value = project.status;
+
+        // Update Flatpickr
+        if (project.start_date) fpStart.setDate(project.start_date); else fpStart.clear();
+        if (project.end_date) fpEnd.setDate(project.end_date); else fpEnd.clear();
+
         modal.classList.remove('hidden');
     }
 
@@ -223,7 +249,7 @@
             status: document.getElementById('status').value
         };
 
-        const url = id ? `/ api / projects / ${id} ` : '/api/projects/';
+        const url = id ? `/api/projects/${id}` : '/api/projects/';
         const method = id ? 'PUT' : 'POST';
 
         const response = await fetch(url, {
@@ -242,7 +268,7 @@
 
     async function deleteProject(id) {
         if (!confirm(translations.confirm)) return;
-        const response = await fetch(`/ api / projects / ${id}`, { method: 'DELETE' });
+        const response = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
         if (response.ok) loadProjects();
         else alert("Error deleting project");
     }
