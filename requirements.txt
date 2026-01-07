@@ -10,3 +10,4 @@ python-jose[cryptography]
 python-multipart
 requests
 google-genai
+python-telegram-bot
