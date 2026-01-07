@@ -45,11 +45,97 @@
     </div>
 </div>
 
+<!-- Overdue Jobs Section -->
+<div class="mt-8">
+    <h2 class="text-xl font-bold text-red-600 mb-4 flex items-center">
+        <i class="fas fa-exclamation-circle mr-2"></i> {{ t('header_overdue', lang) }}
+    </h2>
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{
+                        t('label_title', lang) }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{
+                        t('label_date', lang) }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{
+                        t('label_status', lang) }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{
+                        t('label_technician', lang) }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{
+                        t('label_overdue_time', lang) }}</th>
+                </tr>
+            </thead>
+            <tbody id="overdue-table-body" class="bg-white divide-y divide-gray-200">
+                <!-- Data populated via JS -->
+            </tbody>
+        </table>
+        <div id="no-overdue" class="hidden p-4 text-center text-gray-500">
+            {{ t('text_no_overdue', lang) }} (Success!)
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         loadStats();
         loadCharts();
+        loadOverdueJobs();
     });
+
+    async function loadOverdueJobs() {
+        try {
+            const response = await fetch('/api/reports/overdue');
+            const data = await response.json();
+            const tbody = document.getElementById('overdue-table-body');
+            const noData = document.getElementById('no-overdue');
+
+
+            const translations = {
+                status: {
+                    pending: "{{ t('status_pending', lang) }}",
+                    assigned: "{{ t('status_assigned', lang) }}",
+                    in_progress: "{{ t('status_in_progress', lang) }}",
+                    completed: "{{ t('status_completed', lang) }}",
+                    cancelled: "{{ t('status_cancelled', lang) }}",
+                    on_hold: "{{ t('status_on_hold', lang) }}",
+                },
+                unassigned: "{{ t('label_unassigned', lang) }}"
+            };
+
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                noData.classList.remove('hidden');
+                return;
+            } else {
+                noData.classList.add('hidden');
+            }
+
+            data.forEach(job => {
+                const tr = document.createElement('tr');
+                const statusText = translations.status[job.status] || job.status;
+                const technicianText = job.technician === 'Unassigned' ? translations.unassigned : job.technician;
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${job.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${job.title}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${job.scheduled_date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                            ${statusText}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${technicianText}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-red-600">${job.overdue_duration}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (e) {
+            console.error("Failed to load overdue jobs", e);
+        }
+    }
 
     async function loadStats() {
         const response = await fetch('/api/reports/summary');

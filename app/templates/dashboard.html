@@ -98,7 +98,22 @@
         const jobs = await response.json();
 
         // API now returns Newest First (Desc), so no need to reverse
-        const sortedJobs = jobs;
+        // Filter out Completed/Cancelled and SORT by Date ASC (Oldest first) for Dashboard to show Overdue/Urgent
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+
+        // 1. Filter active
+        const activeJobs = jobs.filter(j => j.status !== 'completed' && j.status !== 'cancelled');
+
+        // 2. Sort by date ASC
+        activeJobs.sort((a, b) => {
+            const dA = new Date(a.scheduled_date + (a.scheduled_time ? 'T' + a.scheduled_time : ''));
+            const dB = new Date(b.scheduled_date + (b.scheduled_time ? 'T' + b.scheduled_time : ''));
+            return dA - dB;
+        });
+
+        // 3. Take top 10
+        const sortedJobs = activeJobs.slice(0, 10);
 
         const tbody = document.getElementById('todayJobsBody');
         tbody.innerHTML = '';
@@ -125,8 +140,18 @@
                 in_progress: "{{ t('status_in_progress', lang) }}",
                 completed: "{{ t('status_completed', lang) }}",
                 cancelled: "{{ t('status_cancelled', lang) }}",
-            }
+            },
+            badge_overdue: "{{ t('badge_overdue', lang) }}"
         };
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
 
         sortedJobs.forEach(job => {
             const tr = document.createElement('tr');
@@ -142,6 +167,15 @@
                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full uppercase ${statusClass}">
                         ${translations.status[job.status] || job.status.replace('_', ' ')}
                     </span>
+                    ${(() => {
+                    const sched = new Date(job.scheduled_date);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    if (sched < today && job.status !== 'completed' && job.status !== 'cancelled') {
+                        return `<span class="ml-2 px-2 inline-flex text-xs leading-5 font-bold rounded-full bg-red-600 text-white animate-pulse">${translations.badge_overdue}</span>`;
+                    }
+                    return '';
+                })()}
                 </td>
                 <td class="px-6 py-4 font-medium text-gray-900">${job.title}</td>
                 <td class="px-6 py-4">
@@ -150,7 +184,7 @@
                 </td>
                 <td class="px-6 py-4 text-xs">${assignedTo}</td>
                 <td class="px-6 py-4">
-                    ${job.scheduled_date} <span class="text-gray-500 text-xs">${job.scheduled_time || ''}</span>
+                    ${formatDate(job.scheduled_date)} <span class="text-gray-500 text-xs">${job.scheduled_time || ''}</span>
                 </td>
             `;
             tbody.appendChild(tr);

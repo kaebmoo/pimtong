@@ -62,6 +62,7 @@ TRANSLATIONS = {
     "label_time": {"en": "Time", "th": "เวลา"},
     "label_location": {"en": "Location (Map)", "th": "พิกัดแผนที่"},
     "label_location": {"en": "Location (Map)", "th": "พิกัดแผนที่"},
+    "label_technician": {"en": "Technician", "th": "ช่างผู้ปฏิบัติงาน"},
     "label_assign": {"en": "Assign Technicians", "th": "มอบหมายช่าง"},
     "label_product_type": {"en": "Product Type", "th": "ประเภทสินค้า"},
     "label_model": {"en": "Model", "th": "รุ่น"},
@@ -169,6 +170,13 @@ TRANSLATIONS = {
     "err_error": {"en": "Error", "th": "ข้อผิดพลาด"},
     "err_delete_job": {"en": "Error deleting job", "th": "เกิดข้อผิดพลาดในการลบใบงาน"},
     "confirm_delete_job": {"en": "Delete this job?", "th": "ยืนยันการลบใบงานนี้?"},
+    
+    # --- New Keys (Overdue & Filters) ---
+    "header_overdue": {"en": "Overdue Jobs", "th": "งานที่ล่าช้า"},
+    "label_overdue_time": {"en": "Overdue Time", "th": "ล่าช้ามาแล้ว"},
+    "text_no_overdue": {"en": "No overdue jobs. Great job!", "th": "ไม่มีงานล่าช้า เยี่ยมมาก!"},
+    "label_all": {"en": "All", "th": "ทั้งหมด"},
+    "badge_overdue": {"en": "OVERDUE", "th": "งานล่าช้า"},
 }
 
 DEFAULT_LANG = "th"

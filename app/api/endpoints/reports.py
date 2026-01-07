@@ -50,6 +50,57 @@ def get_jobs_by_technician(
     data = [{"name": r[0], "count": r[1]} for r in results]
     return data
 
+    return data
+
+@router.get("/overdue")
+def get_overdue_jobs(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)
+):
+    from datetime import datetime, date
+    
+    # Logic: Status NOT Completed/Cancelled AND (Date < Today OR (Date == Today and Time < Now))
+    today = date.today()
+    now_time = datetime.now().strftime("%H:%M")
+    
+    # 1. Past dates
+    overdue_query = db.query(Job).filter(
+        Job.status.notin_([JobStatus.COMPLETED, JobStatus.CANCELLED]),
+        Job.scheduled_date < today
+    )
+    
+    # 2. Today but past time (if time is set)
+    # Using python filtering for time comparison to avoid complex SQL for string time
+    today_jobs = db.query(Job).filter(
+        Job.status.notin_([JobStatus.COMPLETED, JobStatus.CANCELLED]),
+        Job.scheduled_date == today,
+        Job.scheduled_time < now_time,
+        Job.scheduled_time != None # explicit check
+    ).all()
+    
+    results = overdue_query.all() + today_jobs
+    
+    # Format
+    data = []
+    for job in results:
+        delta = (today - job.scheduled_date).days
+        if delta == 0:
+            duration = "Today"
+        else:
+            duration = f"{delta} days"
+            
+        data.append({
+            "id": job.id,
+            "title": job.title,
+            "status": job.status,
+            "scheduled_date": job.scheduled_date,
+            "scheduled_time": job.scheduled_time,
+            "technician": ", ".join([a.technician.full_name for a in job.assignments if a.technician]) if job.assignments else "Unassigned",
+            "overdue_duration": duration
+        })
+        
+    return data
+
 @router.get("/export")
 def export_data(
     db: Session = Depends(get_db),

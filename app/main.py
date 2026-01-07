@@ -140,13 +140,15 @@ async def set_language(lang: str, request: Request):
     response.set_cookie(key="app_lang", value=lang, max_age=31536000) # 1 year
     return response
 
+
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     lang = request.cookies.get("app_lang", "th")
     return templates.TemplateResponse("login.html", {"request": request, "lang": lang})
 
-@app.get("/", response_class=HTMLResponse)
-async def read_root(
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(
     request: Request, 
     user: Optional[User] = Depends(get_current_user_from_cookie)
 ):
@@ -154,6 +156,14 @@ async def read_root(
         return RedirectResponse(url="/login")
     lang = request.cookies.get("app_lang", "th")
     return templates.TemplateResponse("dashboard.html", {"request": request, "user": user, "lang": lang})
+
+@app.get("/", response_class=HTMLResponse)
+async def landing_page(
+    request: Request,
+    user: Optional[User] = Depends(get_current_user_from_cookie)
+):
+    # Pass user to template so we can show "Dashboard" button instead of "Login"
+    return templates.TemplateResponse("product_landing.html", {"request": request, "user": user})
 
 @app.get("/team", response_class=HTMLResponse)
 async def read_team(

@@ -11,7 +11,7 @@
 </div>
 
 <!-- KPI Cards -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
     <div class="bg-white rounded-lg shadow p-6 border-b-4 border-blue-500">
         <div class="text-gray-500 text-sm uppercase tracking-wider font-semibold">{{ t('rep_total_jobs', lang) }}</div>
         <div class="text-3xl font-bold text-gray-800 mt-2" id="kpi-total">-</div>
@@ -28,6 +28,10 @@
     <div class="bg-white rounded-lg shadow p-6 border-b-4 border-purple-500">
         <div class="text-gray-500 text-sm uppercase tracking-wider font-semibold">{{ t('kpi_techs', lang) }}</div>
         <div class="text-3xl font-bold text-gray-800 mt-2" id="kpi-techs">-</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6 border-b-4 border-red-500">
+        <div class="text-gray-500 text-sm uppercase tracking-wider font-semibold">{{ t('header_overdue', lang) }}</div>
+        <div class="text-3xl font-bold text-red-600 mt-2" id="kpi-overdue">-</div>
     </div>
 </div>
 
@@ -84,15 +88,20 @@
         loadPerformanceData();
     });
 
+
+
     async function loadPerformanceData() {
         // Fetch Data
-        const [jobsRes, usersRes] = await Promise.all([
+        const [jobsRes, usersRes, overdueRes] = await Promise.all([
             fetch('/api/jobs/?limit=1000'),
-            fetch('/api/users/?limit=100')
+            fetch('/api/users/?limit=100'),
+            fetch('/api/reports/overdue')
         ]);
 
         const jobs = await jobsRes.json();
         const users = await usersRes.json();
+        const overdueJobs = await overdueRes.json();
+
         const technicians = users.filter(u => u.role === 'technician' || u.role === 'admin');
 
         // --- KPIS ---
@@ -106,6 +115,7 @@
         document.getElementById('kpi-active').innerText = active;
         document.getElementById('kpi-rate').innerText = `${rate}% Rate`;
         document.getElementById('kpi-techs').innerText = technicians.length;
+        document.getElementById('kpi-overdue').innerText = overdueJobs.length;
 
         // --- CHARTS ---
 

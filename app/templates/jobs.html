@@ -19,6 +19,50 @@
     {% endif %}
 </div>
 
+<!-- Filters & Actions -->
+<div class="bg-white p-4 rounded-lg shadow mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('label_status', lang) }}</label>
+            <select id="filterStatus"
+                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 border">
+                <option value="">{{ t('label_all', lang) }}</option>
+                <option value="pending">{{ t('status_pending', lang) }}</option>
+                <option value="assigned">{{ t('status_assigned', lang) }}</option>
+                <option value="in_progress">{{ t('status_in_progress', lang) }}</option>
+                <option value="completed">{{ t('status_completed', lang) }}</option>
+                <option value="cancelled">{{ t('status_cancelled', lang) }}</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('label_date', lang) }}</label>
+            <input type="text" id="filterDateRange" placeholder="Select dates"
+                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 border">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+            <select id="sortOption"
+                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 border">
+                <option value="id_desc">Newest First</option>
+                <option value="id_asc">Oldest First</option>
+                <option value="scheduled_date_asc">Date (Earliest)</option>
+                <option value="scheduled_date_desc">Date (Latest)</option>
+                <option value="status_asc">Status</option>
+            </select>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="applyFilters()"
+                class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none transition">
+                <i class="fas fa-filter mr-1"></i> Filter
+            </button>
+            <button onclick="clearFilters()"
+                class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded focus:outline-none transition">
+                Clear
+            </button>
+        </div>
+    </div>
+</div>
+
 <div class="bg-white shadow rounded-lg overflow-hidden overflow-x-auto">
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
@@ -41,6 +85,33 @@
             <!-- Populated by JS -->
         </tbody>
     </table>
+</div>
+
+<!-- Pagination -->
+<div
+    class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-b-lg shadow mt-1">
+    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm text-gray-700">
+                Showing <span class="font-medium" id="pageStart">1</span> to <span class="font-medium"
+                    id="pageEnd">10</span> of <span class="font-medium" id="totalCount">...</span> results
+            </p>
+        </div>
+        <div>
+            <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                <button onclick="changePage(-1)"
+                    class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                    <span class="sr-only">Previous</span>
+                    <i class="fas fa-chevron-left h-5 w-5"></i>
+                </button>
+                <button onclick="changePage(1)"
+                    class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                    <span class="sr-only">Next</span>
+                    <i class="fas fa-chevron-right h-5 w-5"></i>
+                </button>
+            </nav>
+        </div>
+    </div>
 </div>
 
 <!-- Modal -->
@@ -292,6 +363,8 @@
     let datePicker;
     const currentUserRole = "{{ user.role }}".toLowerCase();
     const currentUserId = {{ user.id }};
+    let currentSkip = 0;
+    let currentLimit = 10;
 
     // Translation object for JS
     const translations = {
@@ -325,6 +398,13 @@
             dateFormat: "Y-m-d",
             locale: currentLang === 'th' ? "th" : "default",
             defaultDate: new Date()
+        });
+
+        // Date Range Filter
+        flatpickr("#filterDateRange", {
+            mode: "range",
+            dateFormat: "Y-m-d",
+            locale: currentLang === 'th' ? "th" : "default"
         });
 
         loadJobs();
@@ -420,6 +500,23 @@
             const searchInput = document.getElementById('globalSearch');
             if (searchInput && search) searchInput.value = search;
 
+            // --- NEW FILTERS ---
+            const status = document.getElementById('filterStatus').value;
+            const dates = document.getElementById('filterDateRange')._flatpickr.selectedDates;
+            const sort = document.getElementById('sortOption').value.split('_');
+
+            if (status) url += `&status=${status}`;
+            if (dates.length === 2) {
+                const start = dates[0].toISOString().split('T')[0];
+                const end = dates[1].toISOString().split('T')[0];
+                url += `&start_date=${start}&end_date=${end}`;
+            }
+            // Sort
+            url += `&sort_by=${sort.slice(0, -1).join('_')}&sort_desc=${sort[sort.length - 1] === 'desc'}`;
+
+            // Pagination
+            url += `&skip=${currentSkip}&limit=${currentLimit}`;
+
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error(`API Error: ${response.status}`);
@@ -485,8 +582,17 @@
                 tr.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full uppercase ${statusClass}">
-                            ${job.status.replace('_', ' ')}
+                            ${translations.status[job.status] || job.status.replace('_', ' ')}
                         </span>
+                        ${(() => {
+                        const sched = new Date(job.scheduled_date);
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        if (sched < today && job.status !== 'completed' && job.status !== 'cancelled') {
+                            return `<span class="ml-1 px-2 inline-flex text-xs leading-5 font-bold rounded-full bg-red-600 text-white">{{ t('badge_overdue', lang) }}</span>`;
+                        }
+                        return '';
+                    })()}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-medium text-gray-900">${job.title}</div>
@@ -509,11 +615,39 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            // Update Pagination UI
+            document.getElementById('pageStart').innerText = currentSkip + 1;
+            document.getElementById('pageEnd').innerText = currentSkip + jobs.length;
+            // Note: Total count is not returned by API yet, so we just show loaded count or estimate
+            document.getElementById('totalCount').innerText = jobs.length < currentLimit ? (currentSkip + jobs.length) : 'Many';
+
         } catch (error) {
             console.error("Load Jobs Error:", error);
             // Alert user so they report it
             alert(translations.errApp + ": " + error.message);
         }
+    }
+
+    function applyFilters() {
+        currentSkip = 0; // Reset page
+        loadJobs();
+    }
+
+    function clearFilters() {
+        document.getElementById('filterStatus').value = '';
+        document.getElementById('filterDateRange')._flatpickr.clear();
+        document.getElementById('sortOption').value = 'id_desc';
+        applyFilters();
+    }
+
+    function changePage(direction) {
+        if (direction === -1 && currentSkip === 0) return;
+        if (direction === 1 && currentJobs.length < currentLimit) return; // End of list
+
+        currentSkip += (direction * currentLimit);
+        if (currentSkip < 0) currentSkip = 0;
+        loadJobs();
     }
 
     const modal = document.getElementById('jobModal');

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
@@ -133,16 +133,23 @@ def create_job(
 from sqlalchemy import or_
 
 @router.get("/", response_model=List[JobOut])
+@router.get("/", response_model=List[JobOut])
 def read_jobs(
     skip: int = 0, 
     limit: int = 100, 
     project_id: Optional[int] = None,
     search: Optional[str] = None,
+    sort_by: Optional[str] = "id",
+    sort_desc: bool = True,
+    status: Optional[List[JobStatus]] = Query(None),
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     # DEBUG LOGS
-    print(f"DEBUG: Read Jobs - User: {current_user.username}, Role: {current_user.role}, Search: {search}, Project: {project_id}")
+    print(f"DEBUG: Read Jobs - User: {current_user.username}, Role: {current_user.role}, Search: {search}")
+
 
     query = db.query(Job)
     
@@ -181,8 +188,28 @@ def read_jobs(
             
         query = query.filter(or_(*filters))
         
+        query = query.filter(or_(*filters))
+        
+    # Apply Filters
+    if status:
+        query = query.filter(Job.status.in_(status))
+    
+    if start_date:
+        query = query.filter(Job.scheduled_date >= start_date)
+        
+    if end_date:
+        query = query.filter(Job.scheduled_date <= end_date)
+
     # Apply Sort
-    query = query.order_by(Job.id.desc())
+    if sort_by and hasattr(Job, sort_by):
+        sort_attr = getattr(Job, sort_by)
+        if sort_desc:
+            query = query.order_by(sort_attr.desc())
+        else:
+            query = query.order_by(sort_attr.asc())
+    else:
+        # Default sort
+        query = query.order_by(Job.id.desc())
     
     jobs = query.offset(skip).limit(limit).all()
     print(f"DEBUG: Returning {len(jobs)} jobs")

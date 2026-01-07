@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pimtong Work Manager - ระบบจัดการงานช่างยุคใหม่</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+        }
+
+        .hero-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800 antialiased">
+
+    <!-- Navbar -->
+    <nav class="bg-white/90 backdrop-blur-md fixed w-full z-50 border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <i class="fas fa-tools text-2xl text-blue-600 mr-2"></i>
+                    <span class="font-bold text-xl tracking-tight text-gray-900">Pimtong WM</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#features" class="text-gray-500 hover:text-blue-600 transition">ฟีเจอร์</a>
+                    <a href="#steps" class="text-gray-500 hover:text-blue-600 transition">การใช้งาน</a>
+                    <a href="#pricing" class="text-gray-500 hover:text-blue-600 transition">ราคา</a>
+                </div>
+                <div>
+                    {% if user %}
+                    <a href="/dashboard"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full font-medium transition shadow-lg hover:shadow-xl">
+                        <i class="fas fa-tachometer-alt mr-2"></i> ไปที่ Dashboard
+                    </a>
+                    {% else %}
+                    <a href="/login"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full font-medium transition shadow-lg hover:shadow-xl">
+                        เข้าสู่ระบบ
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-bg text-white pt-32 pb-20 px-4 relative overflow-hidden">
+        <!-- Background Decor -->
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20 pointer-events-none">
+            <div
+                class="absolute -top-10 -right-10 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob">
+            </div>
+            <div
+                class="absolute -bottom-10 -left-10 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000">
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto text-center relative z-10">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                จัดการงานช่าง...<br>
+                <span class="gradient-text">ง่ายแค่ปลายนิ้ว ด้วย AI</span>
+            </h1>
+            <p class="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto font-light">
+                ลืม Excel และการจดกระดาษไปได้เลย พบกับระบบ Work Manager ที่ช่วยให้ทีมช่างของคุณทำงานได้เต็มประสิทธิภาพ
+                พร้อมผู้ช่วย AI อัจฉริยะที่สั่งงานได้ผ่านแชท
+            </p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <a href="#contact"
+                    class="bg-white text-blue-900 hover:bg-gray-100 px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition transform hover:scale-105 flex items-center justify-center">
+                    <i class="fab fa-line text-2xl mr-2 text-green-500"></i> ปรึกษาใช้งานฟรี
+                </a>
+                <a href="#features"
+                    class="border border-gray-500 hover:border-white text-gray-300 hover:text-white px-8 py-4 rounded-xl font-medium text-lg transition flex items-center justify-center">
+                    ดูฟีเจอร์ทั้งหมด
+                </a>
+            </div>
+
+            <div class="mt-16 relative group">
+                <div
+                    class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
+                </div>
+                <img src="/static/dashboard_preview.png" alt="Pimtong Work Manager Dashboard"
+                    class="relative rounded-2xl shadow-2xl border-4 border-gray-700/50 mx-auto max-w-4xl w-full">
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Grid -->
+    <section id="features" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">ทำไมต้อง Pimtong WM?</h2>
+                <p class="text-gray-500 text-lg">แพลตฟอร์มที่เข้าใจการทำงานของธุรกิจบริการและงานช่างอย่างแท้จริง</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="feature-card bg-gray-50 p-8 rounded-2xl border border-gray-100">
+                    <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-6">
+                        <i class="fas fa-robot text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">AI Assistant 24/7</h3>
+                    <p class="text-gray-600">ไม่ต้องเข้าเว็บก็ทำงานได้! สั่งงาน เช็คสถานะ หรือถามยอดขายผ่าน Telegram
+                        Chat ได้ทันที เหมือนมีเลขาซุปเปอร์ฮีโร่</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="feature-card bg-gray-50 p-8 rounded-2xl border border-gray-100">
+                    <div
+                        class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-6">
+                        <i class="fas fa-tasks text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Work Order Tracking</h3>
+                    <p class="text-gray-600">ติดตามทุกงานซ่อม งานติดตั้ง ตั้งแต่เปิดใบงานจนถึงปิดจ็อบ เก็บประวัติลูกค้า
+                        ข้อมูลสินค้า และมอบหมายงานให้ทีมช่างได้ง่ายดาย</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="feature-card bg-gray-50 p-8 rounded-2xl border border-gray-100">
+                    <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mb-6">
+                        <i class="fas fa-chart-pie text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Real-time Dashboard</h3>
+                    <p class="text-gray-600">ผู้บริหารดูภาพรวมได้ทุกที่ กราฟสวยงาม เข้าใจง่าย
+                        วิเคราะห์ประสิทธิภาพทีมช่างได้แม่นยำ</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it Works / Usage Steps -->
+    <section id="steps" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">เริ่มต้นใช้งานง่ายๆ ใน 3 ขั้นตอน</h2>
+                <p class="text-gray-500 text-lg">ระบบที่ออกแบบมาให้ User Friendly ที่สุด ไม่ต้องเก่งไอทีก็ใช้เป็น</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+                <!-- Line Connector (Desktop) -->
+                <div class="hidden md:block absolute top-24 left-[16%] right-[16%] h-1 bg-blue-200 -z-10"></div>
+
+                <!-- Step 1 -->
+                <div class="text-center bg-white md:bg-transparent p-6 rounded-xl md:shadow-none shadow-md">
+                    <div
+                        class="w-20 h-20 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6 border-4 border-gray-50">
+                        1</div>
+                    <h3 class="text-xl font-bold mb-2">สร้างใบงาน (Job)</h3>
+                    <p class="text-gray-600">Admin กรอกข้อมูลลูกค้าและงานติดตั้ง/ซ่อม ผ่านหน้าเว็บ หรือสั่งผ่าน AI Bot
+                        ก็ได้</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="text-center bg-white md:bg-transparent p-6 rounded-xl md:shadow-none shadow-md">
+                    <div
+                        class="w-20 h-20 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6 border-4 border-gray-50">
+                        2</div>
+                    <h3 class="text-xl font-bold mb-2">ช่างรับงาน</h3>
+                    <p class="text-gray-600">ช่างได้รับแจ้งเตือนผ่านมือถือ กดดูแผนที่และรายละเอียดงานได้ทันที
+                        ไม่ต้องโทรถาม</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="text-center bg-white md:bg-transparent p-6 rounded-xl md:shadow-none shadow-md">
+                    <div
+                        class="w-20 h-20 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6 border-4 border-gray-50">
+                        3</div>
+                    <h3 class="text-xl font-bold mb-2">ปิดงาน & ดูสรุป</h3>
+                    <p class="text-gray-600">ช่างอัปเดตสถานะ "เสร็จสิ้น" ข้อมูลจะวิ่งเข้า Dashboard
+                        ให้ผู้บริหารดูงานได้ Real-time</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Highlight Section -->
+    <section id="ai" class="py-20 bg-gray-900 text-white overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="w-full md:w-1/2">
+                    <div
+                        class="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-2xl transform rotate-2 hover:rotate-0 transition duration-500">
+                        <!-- Chat Mockup -->
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs">U
+                                </div>
+                                <div class="bg-gray-700 px-4 py-2 rounded-2xl rounded-tl-none max-w-[80%]">
+                                    พรุ่งนี้มีงานที่ต้องไปบ้านคุณสมชายไหม?
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3 flex-row-reverse">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-xs">
+                                    AI</div>
+                                <div class="bg-blue-600 px-4 py-2 rounded-2xl rounded-tr-none max-w-[80%] text-white">
+                                    ✅ <b>มีครับ Job #102</b><br>
+                                    📅 14 ม.ค. 10:00 น.<br>
+                                    📍 หมู่บ้านพฤกษา (มีแผนที่)<br>
+                                    🛠 ล้างแอร์ 3 เครื่อง
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs">U
+                                </div>
+                                <div class="bg-gray-700 px-4 py-2 rounded-2xl rounded-tl-none max-w-[80%]">
+                                    โอเค รับทราบ
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full md:w-1/2">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">
+                        <span class="text-blue-400">Smart AI</span> ผู้ช่วยส่วนตัวที่ดีที่สุด
+                    </h2>
+                    <p class="text-gray-400 text-lg mb-6 leading-relaxed">
+                        ไม่ต้องเสียเวลาเปิดคอมพิวเตอร์ หรือโทรเช็คงาน เพียงแค่พิมพ์ถาม AI ใน Telegram
+                        ข้อมูลทุกอย่างก็พร้อมเสิร์ฟถึงมือคุณทันที รองรับทั้งภาษาไทยและคำสั่งเสียง
+                    </p>
+                    <ul class="space-y-4 text-gray-300">
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            เช็คตารางงานรายวัน/รายสัปดาห์</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            อัปเดตสถานะงาน (เสร็จ/ยกเลิก)</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            ค้นหาข้อมูลลูกค้า เบอร์โทร ที่อยู่</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-6 text-gray-900">แพ็คเกจราคา</h2>
+            <p class="text-gray-500 text-lg mb-12">คุ้มค่าที่สุดสำหรับการบริหารงานช่างมืออาชีพ</p>
+
+            <div
+                class="max-w-md mx-auto bg-white rounded-3xl shadow-xl border-2 border-primary overflow-hidden relative">
+                <div
+                    class="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-bl-lg">
+                    RECOMMENDED</div>
+                <div class="p-8 pb-0">
+                    <h3 class="text-2xl font-bold text-gray-700 mb-2">Professional Plan</h3>
+                    <div class="flex justify-center items-baseline my-6">
+                        <span class="text-5xl font-extrabold text-gray-900">30,000</span>
+                        <span class="text-gray-500 ml-2">บาท / ปี</span>
+                    </div>
+                    <p class="text-gray-600 mb-6">เฉลี่ยเพียงเดือนละ 2,500 บาท</p>
+                </div>
+                <div class="bg-gray-50 p-8 border-t border-gray-100">
+                    <ul class="space-y-4 text-left text-gray-600 mb-8">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>
+                            ไม่จำกัดจำนวนผู้ใช้งาน (Users)</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>
+                            ไม่จำกัดจำนวนใบงาน (Unlimited Jobs)</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i> AI Assistant
+                            เต็มรูปแบบ</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i> Dashboard &
+                            Export Data</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i> ฟรี
+                            อัปเดตฟีเจอร์ใหม่ตลอดอายุการใช้งาน</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>
+                            สนับสนุนการใช้งานผ่าน Telegram Chat</li>
+                    </ul>
+                    <a href="#contact"
+                        class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-md">
+                        สนใจสั่งซื้อ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section id="contact" class="py-20 bg-blue-600 text-white text-center">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">พร้อมยกระดับธุรกิจของคุณหรือยัง?</h2>
+            <p class="text-blue-100 text-lg mb-10">เริ่มใช้งาน Pimtong Work Manager วันนี้
+                เพื่อการจัดการงานช่างที่เป็นระบบและมืออาชีพยิ่งขึ้น</p>
+            <button
+                class="bg-white text-blue-600 hover:bg-gray-100 text-xl font-bold py-4 px-10 rounded-full shadow-lg transition transform hover:scale-105">
+                ติดต่อขอ Demo ฟรี
+            </button>
+            <p class="mt-6 text-sm text-blue-200">ทีมงานพร้อมดูแลและสอนการใช้งานจนเป็น</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-10 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="flex items-center justify-center mb-4">
+                <i class="fas fa-tools text-gray-500 mr-2"></i>
+                <span class="text-gray-300 font-bold text-lg">Pimtong WM</span>
+            </div>
+            <p class="text-sm">© 2026 Pimtong Work Manager. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

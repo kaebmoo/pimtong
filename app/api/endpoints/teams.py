@@ -19,9 +19,17 @@ class TeamCreate(TeamBase):
 class TeamUpdate(TeamBase):
     pass
 
+class MemberOut(BaseModel):
+    id: int
+    full_name: str
+    username: str
+    class Config:
+        from_attributes = True
+
 class TeamOut(TeamBase):
     id: int
     member_count: int = 0
+    members: List[MemberOut] = []
     
     class Config:
         from_attributes = True
@@ -37,6 +45,8 @@ def read_teams(
     for t in teams:
         t_out = TeamOut.from_orm(t)
         t_out.member_count = len(t.members)
+        # Populate members
+        t_out.members = [MemberOut.from_orm(m) for m in t.members]
         results.append(t_out)
     return results
 

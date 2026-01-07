@@ -83,6 +83,14 @@
 
         teams.forEach(team => {
             const tr = document.createElement('tr');
+
+            // Format members list
+            let membersHtml = `<div class="text-sm text-gray-500 font-medium">${team.member_count} Members</div>`;
+            if (team.members && team.members.length > 0) {
+                const names = team.members.map(m => m.full_name).join(', ');
+                membersHtml += `<div class="text-xs text-gray-400 truncate max-w-xs" title="${names}">${names}</div>`;
+            }
+
             tr.innerHTML = `
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="w-6 h-6 rounded-full" style="background-color: ${team.color}"></div>
@@ -90,8 +98,8 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">${team.name}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-500">${team.member_count} Members</div>
+                <td class="px-6 py-4">
+                    ${membersHtml}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button onclick='editTeam(${JSON.stringify(team)})' class="text-indigo-600 hover:text-indigo-900">{{ t('btn_edit', lang) }}</button>
