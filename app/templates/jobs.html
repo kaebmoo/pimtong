@@ -208,19 +208,6 @@
                         </div>
 
                         <div>
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="jobType">{{ t('label_type',
-                                lang)
-                                }}</label>
-                            <select
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                id="jobType">
-                                <option value="service">Service</option>
-                                <option value="sales">Sales</option>
-                                <option value="project">Project</option>
-                            </select>
-                        </div>
-
-                        <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="status">{{ t('label_status',
                                 lang) }}</label>
                             <select
@@ -231,6 +218,19 @@
                                 <option value="in_progress">In Progress</option>
                                 <option value="completed">Completed</option>
                                 <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="jobType">{{ t('label_type',
+                                lang)
+                                }}</label>
+                            <select
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                id="jobType">
+                                <option value="service">Service</option>
+                                <option value="sales">Sales</option>
+                                <option value="project">Project</option>
                             </select>
                         </div>
 
